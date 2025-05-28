@@ -1,0 +1,21 @@
+services:
+
+  web:
+    image: ${DOCKERHUB_USERNAME}/auth-backend:${TAG}
+    container_name: auth-backend
+    tty: true
+    stdin_open: true
+    restart: always
+    ports:
+      - "${PORT}:8000"
+    volumes:
+      - ./logs:/app/logs  
+      - .env:/app/.env 
+    command: >
+       gunicorn -c gunicorn.conf.py run:app
+    networks:
+      - auth_network
+
+networks:
+  auth_network:
+    external: true

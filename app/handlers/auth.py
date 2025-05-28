@@ -1,0 +1,151 @@
+from datetime import datetime, timedelta, timezone
+
+from fastapi import HTTPException, Security
+from fastapi.security import HTTPAuthorizationCredentials
+from jose import JWTError, jwt
+from loguru import logger
+
+from app.auth_schemas import bearer_scheme
+from app.config import get_settings
+from app.database.models import User
+from app.utils.permissions_get import get_company_permissions_for_user
+
+# Конфигурация JWT
+settings = get_settings()
+SECRET_KEY = settings.SECRET_KEY
+ALGORITHM = settings.ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES = int(settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+REFRESH_TOKEN_EXPIRE_DAYS = int(settings.REFRESH_TOKEN_EXPIRE_DAYS)
+JWT_EXPIRATION_HOURS = int(settings.JWT_EXPIRATION_HOURS)
+
+
+def generate_token(payload: dict, expires_in_hours: int = JWT_EXPIRATION_HOURS) -> str:
+    payload = {
+        **payload,
+        "exp": datetime.now(timezone.utc) + timedelta(hours=expires_in_hours),
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return token
+
+
+def verify_jwt_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError as e:
+        logger.warning(f"❌ Ошибка при декодировании токена: {str(e)}")
+        raise HTTPException(status_code=401, detail="Invalid or expired token") from e
+
+
+def create_access_token(
+    data: dict, expires_delta: timedelta = timedelta(ACCESS_TOKEN_EXPIRE_MINUTES)
+):
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + (
+        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+# Проверка токена
+
+
+def create_refresh_token(data: dict):
+    return create_access_token(data, timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
+
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
+) -> dict:
+    if (
+        not credentials
+        or not credentials.credentials
+        or credentials.credentials.strip() == ""
+    ):
+        logger.warning("❌ Отсутствует или пустой токен Authorization")
+        raise HTTPException(status_code=401, detail="Missing or empty token")
+
+    token = credentials.credentials.strip()
+
+    token_data = await verify_token(token)
+    return token_data
+
+
+async def verify_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if email is None:
+            logger.warning("❌ Токен не содержит 'sub'. Отказ в доступе.")
+            raise HTTPException(status_code=401, detail="Invalid token")
+        application_id = payload.get("application_id")
+
+        user = await User.get_or_none(email=email)
+        if not user or not application_id:
+            logger.warning(
+                "❌ Пользователь или application не найдены. Отказ в доступе."
+            )
+            raise HTTPException(
+                status_code=401, detail="Invalid token or missing application"
+            )
+        permissions = await get_company_permissions_for_user(user, application_id)
+        token_data = {
+            "email": email,
+            "permissions": permissions,
+            "is_superadmin": user.is_superadmin,
+            "user_id": str(user.id),
+        }
+
+        return token_data
+
+    except JWTError as e:
+        logger.warning(f"❌ Ошибка при декодировании токена: {str(e)}")
+        raise HTTPException(status_code=401, detail="Invalid or expired token") from e
+
+
+async def login_handler(email: str, password: str, application: str):
+    user = await User.get_or_none(email=email)
+
+    if not user:
+        logger.warning(f"🔐 Пользователь '{email}' не найден")
+        return None
+
+    if not user.check_password(password):
+        logger.warning(f"🔐 Неверный пароль для пользователя '{email}'")
+        return None
+
+    if not user.is_verified and not user.is_superadmin:
+        raise HTTPException(status_code=403, detail="Необходимо верифицировать email")
+
+    company_permissions = await get_company_permissions_for_user(user, application)
+
+    return user, company_permissions
+
+
+async def require_superadmin(
+    credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
+) -> dict:
+    if not credentials or not credentials.credentials.strip():
+        logger.warning("❌ Отсутствует или пустой токен Authorization")
+        raise HTTPException(status_code=401, detail="Missing or empty token")
+
+    token = credentials.credentials.strip()
+    user_data = await verify_token(token)
+
+    email = user_data.get("email")
+    if not email:
+        logger.warning("❌ Токен не содержит имя пользователя")
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    if not user_data["is_superadmin"]:
+        logger.warning(f"🚫 Пользователь {email} не является суперадмином")
+        raise HTTPException(status_code=403, detail="Только для суперадминов")
+
+    logger.info(f"✅ Суперадмин авторизован: {email}")
+    return {
+        "user": user_data["user_id"],
+        "email": email,
+        "is_superadmin": True,
+    }
