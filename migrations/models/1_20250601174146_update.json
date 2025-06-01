@@ -1,0 +1,12 @@
+{
+  "upgrade": [
+  "CREATE TABLE IF NOT EXISTS \"legal_entity_types\" (\n    \"id\" VARCHAR(255) NOT NULL PRIMARY KEY,\n    \"name\" VARCHAR(255) NOT NULL\n);",
+  "CREATE TABLE IF NOT EXISTS \"legal_entities\" (\n    \"id\" UUID NOT NULL PRIMARY KEY,\n    \"full_name\" VARCHAR(255),\n    \"short_name\" VARCHAR(255) NOT NULL,\n    \"inn\" VARCHAR(12) NOT NULL,\n    \"kpp\" VARCHAR(9),\n    \"ogrn\" VARCHAR(13) NOT NULL UNIQUE,\n    \"vat_rate\" INT NOT NULL DEFAULT 0,\n    \"address\" VARCHAR(255),\n    \"opf\" VARCHAR(255),\n    \"signer\" VARCHAR(255),\n    \"entity_type_id\" VARCHAR(255) REFERENCES \"legal_entity_types\" (\"id\") ON DELETE CASCADE,\n    CONSTRAINT \"uid_legal_entit_inn_06a077\" UNIQUE (\"inn\", \"kpp\")\n);",
+  "CREATE TABLE IF NOT EXISTS \"entity_company_relations\" (\n    \"id\" UUID NOT NULL PRIMARY KEY,\n    \"relation_type\" VARCHAR(10) NOT NULL,\n    \"description\" TEXT,\n    \"created_at\" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,\n    \"company_id\" UUID NOT NULL REFERENCES \"companies\" (\"id\") ON DELETE CASCADE,\n    \"legal_entity_id\" UUID NOT NULL REFERENCES \"legal_entities\" (\"id\") ON DELETE CASCADE\n);"
+],
+  "downgrade": [
+    "DROP TABLE IF EXISTS \"entity_company_relations\"",
+    "DROP TABLE IF EXISTS \"legal_entities\"",
+    "DROP TABLE IF EXISTS \"legal_entity_types\""
+  ]
+}

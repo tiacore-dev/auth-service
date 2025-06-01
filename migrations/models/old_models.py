@@ -2,6 +2,7 @@ import uuid
 
 import bcrypt
 from tortoise import fields
+from tortoise.fields.relational import ReverseRelation
 from tortoise.models import Model
 
 
@@ -157,20 +158,67 @@ class UserCompanyRelation(Model):
         on_delete=fields.CASCADE,
     )
     user = fields.ForeignKeyField(
-        "diff_models.User",
-        related_name="user_company_relations",
-        on_delete=fields.CASCADE,
+        "diff_models.User", related_name="user_company_relations", on_delete=fields.CASCADE
     )
     role = fields.ForeignKeyField(
-        "diff_models.Role",
-        related_name="user_company_relations",
-        on_delete=fields.CASCADE,
+        "diff_models.Role", related_name="user_company_relations", on_delete=fields.CASCADE
     )
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
         table = "user_to_company_relations"
 
+
+class LegalEntityType(Model):
+    id = fields.CharField(pk=True, max_length=255)
+    name = fields.CharField(max_length=255)
+
+    class Meta:
+        table = "legal_entity_types"
+
+
+class LegalEntity(Model):
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    full_name = fields.CharField(max_length=255, null=True)
+    short_name = fields.CharField(max_length=255)
+    inn = fields.CharField(max_length=12)
+    kpp = fields.CharField(max_length=9, null=True)
+    ogrn = fields.CharField(max_length=13, unique=True)
+    vat_rate = fields.IntField(default=0)
+    address = fields.CharField(max_length=255, null=True)
+    opf = fields.CharField(max_length=255, null=True)
+    entity_type = fields.ForeignKeyField(
+        "diff_models.LegalEntityType", related_name="entities", null=True
+    )
+    signer = fields.CharField(max_length=255, null=True)
+
+    entity_company_relations: ReverseRelation["EntityCompanyRelation"]
+
+    class Meta:
+        table = "legal_entities"
+        unique_together = (("inn", "kpp"),)
+
+
+class EntityCompanyRelation(Model):
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    company = fields.ForeignKeyField(
+        "diff_models.Company",
+        related_name="entity_company_relations",
+        on_delete=fields.CASCADE,
+    )
+    legal_entity = fields.ForeignKeyField(
+        "diff_models.LegalEntity",
+        related_name="entity_company_relations",
+        on_delete=fields.CASCADE,
+    )
+    relation_type = fields.CharField(max_length=10)
+    description = fields.TextField(null=True)
+    created_at = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        table = "entity_company_relations"
+
+from tortoise import Model, fields
 
 MAX_VERSION_LENGTH = 255
 
@@ -181,3 +229,4 @@ class Aerich(Model):
 
     class Meta:
         ordering = ["-id"]
+
