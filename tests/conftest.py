@@ -44,6 +44,7 @@ pytest_plugins = [
     "tests.fixtures.names",
     "tests.fixtures.company_relations",
     "tests.fixtures.permissions",
+    "tests.fixtures.legal_entity",
 ]
 
 

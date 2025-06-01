@@ -207,3 +207,4 @@ jobs:
             -d chat_id="$CHAT_ID" \
             -d parse_mode=Markdown \
             -d "text=$TEXT" || exit 1
+

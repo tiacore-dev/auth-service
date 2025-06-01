@@ -2,6 +2,7 @@ import pytest
 
 from app.database.models import (
     Application,
+    LegalEntityType,
     Permission,
     Restriction,
     Role,
@@ -59,3 +60,11 @@ async def seed_role_user(seed_application):
         name="Пользователь", system_name="user", application=seed_application
     )
     return role
+
+
+@pytest.fixture(scope="function")
+@pytest.mark.asyncio
+async def seed_legal_entity_type():
+    """Создает тестовый тип юридического лица."""
+    entity_type = await LegalEntityType.create(id="ooo", name="ООО")
+    return entity_type

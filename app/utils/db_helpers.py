@@ -2,6 +2,7 @@ from tortoise import Tortoise
 from tortoise.transactions import in_transaction
 
 from app.config import BaseConfig
+from app.database.models import LegalEntity
 
 
 async def drop_all_tables():
@@ -48,3 +49,26 @@ async def create_test_data():
 
     except Exception as e:
         print(f"Exception: {e}")
+
+
+async def get_entities_by_query(query):
+    total_count = await LegalEntity.filter(query).count()
+    entities = (
+        await LegalEntity.filter(query)
+        .prefetch_related("entity_type", "entity_company_relations")
+        .all()
+        .values(
+            "id",
+            "full_name",
+            "short_name",
+            "inn",
+            "kpp",
+            "opf",
+            "vat_rate",
+            "address",
+            "entity_type_id",
+            "signer",
+            "ogrn",
+        )
+    )
+    return total_count, entities

@@ -2,7 +2,10 @@ from fastapi import FastAPI
 
 from .auth_route import auth_router
 from .company_route import company_router
+from .entity_company_relation_route import entity_relation_router
+from .entity_type_route import entity_types_router
 from .invite_route import invite_router
+from .legal_entity_route import entity_router
 from .permissions_route import permissions_router
 from .register_route import register_router
 from .restrictions_route import restrictions_router
@@ -35,4 +38,16 @@ def register_routes(app: FastAPI):
         role_relation_router,
         prefix="/api/role-permission-relations",
         tags=["RolePermissionRelations"],
+    )
+
+    app.include_router(
+        entity_types_router, prefix="/api/legal-entity-types", tags=["LegalEntityTypes"]
+    )
+    app.include_router(
+        entity_router, prefix="/api/legal-entities", tags=["LegalEntities"]
+    )
+    app.include_router(
+        entity_relation_router,
+        prefix="/api/entity-company-relations",
+        tags=["EntityCompanyRelations"],
     )
