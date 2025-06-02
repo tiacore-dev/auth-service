@@ -69,12 +69,6 @@ class Role(Model):
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     name = fields.CharField(max_length=50, unique=True)
     system_name = fields.CharField(max_length=50, null=True, unique=True)
-    application = fields.ForeignKeyField(
-        "models.Application",
-        related_name="roles",
-        on_delete=fields.CASCADE,
-        source_field="application_id",  # явное указание
-    )
     comment = fields.TextField(null=True)
 
     def __repr__(self):
@@ -101,6 +95,12 @@ class RolePermissionRelation(Model):
         related_name="role_permission_relations",
         null=True,
         on_delete=fields.SET_NULL,
+    )
+    application = fields.ForeignKeyField(
+        "models.Application",
+        related_name="roles",
+        on_delete=fields.CASCADE,
+        source_field="application_id",  # явное указание
     )
     created_at = fields.DatetimeField(auto_now_add=True)
 

@@ -24,31 +24,31 @@ async def permission_view_user():
 @pytest.fixture
 async def seed_application():
     return await Application.create(
-        id="test_app", name="Test App", system_name="test_app"
+        id="auth_app", name="Test App", system_name="test_app"
     )
 
 
 @pytest.fixture
 async def role_with_edit_user(permission_edit_user, seed_application):
-    role = await Role.create(
-        name="editor", system_name="admin", application=seed_application
+    role = await Role.create(name="editor", system_name="admin")
+    await RolePermissionRelation.create(
+        role=role, permission=permission_edit_user, application=seed_application
     )
-    await RolePermissionRelation.create(role=role, permission=permission_edit_user)
     return role
 
 
 @pytest.fixture
 async def other_role(permission_view_user, seed_application):
-    role = await Role.create(name="no_permission", application=seed_application)
-    await RolePermissionRelation.create(role=role, permission=permission_view_user)
+    role = await Role.create(name="no_permission")
+    await RolePermissionRelation.create(
+        role=role, permission=permission_view_user, application=seed_application
+    )
     return role
 
 
 @pytest.fixture
-async def user_role(seed_application):
-    role = await Role.create(
-        name="Пользователь", system_name="user", application=seed_application
-    )
+async def user_role():
+    role = await Role.create(name="Пользователь", system_name="user")
     return role
 
 

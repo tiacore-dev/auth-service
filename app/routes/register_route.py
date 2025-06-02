@@ -27,7 +27,7 @@ async def register(data: RegisterRequest):
         full_name=data.full_name,
         position=data.position,
     )
-    token = generate_token({"sub": str(user.id), "application": data.application_id})
+    token = generate_token({"sub": str(user.id)})
     logger.info(f"Пользователь зарегистрирован: {user.email}, user_id={user.id}")
     verification_link = f"{settings.FRONT_ORIGIN}/login?token={token}"
     body = f"""
@@ -43,9 +43,7 @@ async def register(data: RegisterRequest):
 
 
 @register_router.post("/resend-verification")
-async def resend_verification(
-    email: str = Body(..., embed=True), application_id: str = Body(..., embed=True)
-):
+async def resend_verification(email: str = Body(..., embed=True)):
     user = await User.get_or_none(email=email)
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")

@@ -12,6 +12,7 @@ class RolePermissionRelationCreateSchema(CleanableBaseModel):
     role_id: UUID = Field(..., description="ID роли")
     permission_id: str = Field(..., description="ID разрешения")
     restriction_id: Optional[str] = Field(None, description="ID запрета")
+    application_id: str = Field(..., description="ID приложения")
 
     class Config:
         from_attributes = True
@@ -21,6 +22,7 @@ class RolePermissionRelationEditSchema(CleanableBaseModel):
     role_id: Optional[UUID] = None
     permission_id: Optional[str] = None
     restriction_id: Optional[str] = None
+    application_id: Optional[str] = None
 
 
 class RolePermissionRelationSchema(CleanableBaseModel):
@@ -28,6 +30,7 @@ class RolePermissionRelationSchema(CleanableBaseModel):
     role_id: UUID
     permission_id: str
     restriction_id: Optional[str] = None
+    application_id: str
     created_at: datetime
 
     class Config:
@@ -53,6 +56,7 @@ def role_permission_filter_params(
     role_id: Optional[UUID] = Query(None, description="Фильтр по роли"),
     permission_id: Optional[str] = Query(None, description="Фильтр по разрешению"),
     restriction_id: Optional[str] = Query(None, description="Фильтр по запрету"),
+    application_id: Optional[str] = Query(None, description="Фильтр по приложению"),
     sort_by: Optional[str] = Query("created_at", description="Поле сортировки"),
     order: Optional[str] = Query("desc", description="Порядок сортировки: asc/desc"),
     page: int = Query(1, ge=1, description="Номер страницы"),
@@ -62,6 +66,7 @@ def role_permission_filter_params(
         "role_id": role_id,
         "permission_id": permission_id,
         "restriction_id": restriction_id,
+        "application_id": application_id,
         "sort_by": sort_by,
         "order": order,
         "page": page,

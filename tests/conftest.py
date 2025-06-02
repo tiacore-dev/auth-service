@@ -97,8 +97,6 @@ async def jwt_token_admin(seed_admin: User, seed_application: Application):
     """Генерирует JWT токен для администратора."""
     token_data = {
         "sub": seed_admin.email,
-        "user_id": str(seed_admin.id),
-        "application_id": str(seed_application.id),
     }
     return {
         "access_token": create_access_token(token_data),
@@ -107,17 +105,15 @@ async def jwt_token_admin(seed_admin: User, seed_application: Application):
 
 
 @pytest.fixture
-def get_token_for_user(seed_application: Application):
+def get_token_for_user():
     async def _get_token(user: User, password="123"):
-        auth_result = await login_handler(user.email, password, seed_application.id)
+        auth_result = await login_handler(user.email, password)
         if not auth_result:
             raise ValueError(f"Не удалось залогиниться: {user.email}")
         user_obj, _ = auth_result
         return create_access_token(
             {
                 "sub": user_obj.email,
-                "application_id": str(seed_application.id),
-                "user_id": str(user.id),
             }
         )
 

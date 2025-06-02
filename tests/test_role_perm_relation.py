@@ -1,15 +1,23 @@
 import pytest
 from httpx import AsyncClient
 
-from app.database.models import RolePermissionRelation
+from app.database.models import Application, Permission, Role, RolePermissionRelation
 
 
 @pytest.mark.asyncio
 async def test_add_role_permission_relation(
-    test_app: AsyncClient, jwt_token_admin, seed_role_admin, seed_permission
+    test_app: AsyncClient,
+    jwt_token_admin: dict,
+    seed_role_admin: Role,
+    seed_permission: Permission,
+    seed_application: Application,
 ):
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
-    data = {"role_id": str(seed_role_admin.id), "permission_id": seed_permission.id}
+    data = {
+        "role_id": str(seed_role_admin.id),
+        "permission_id": seed_permission.id,
+        "application_id": seed_application.id,
+    }
 
     response = await test_app.post(
         "/api/role-permission-relations/add", headers=headers, json=data
@@ -29,9 +37,9 @@ async def test_add_role_permission_relation(
 @pytest.mark.asyncio
 async def test_update_role_permission_relation(
     test_app: AsyncClient,
-    jwt_token_admin,
-    seed_role_permission_relation,
-    seed_role_manager,
+    jwt_token_admin: dict,
+    seed_role_permission_relation: RolePermissionRelation,
+    seed_role_manager: Role,
 ):
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
     update_data = {"role_id": str(seed_role_manager.id)}
@@ -55,7 +63,9 @@ async def test_update_role_permission_relation(
 
 @pytest.mark.asyncio
 async def test_delete_role_permission_relation(
-    test_app: AsyncClient, jwt_token_admin, seed_role_permission_relation
+    test_app: AsyncClient,
+    jwt_token_admin: dict,
+    seed_role_permission_relation: RolePermissionRelation,
 ):
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
     response = await test_app.delete(
@@ -72,7 +82,9 @@ async def test_delete_role_permission_relation(
 
 @pytest.mark.asyncio
 async def test_get_role_permission_relation(
-    test_app: AsyncClient, jwt_token_admin, seed_role_permission_relation
+    test_app: AsyncClient,
+    jwt_token_admin: dict,
+    seed_role_permission_relation: RolePermissionRelation,
 ):
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
     response = await test_app.get(
@@ -92,7 +104,7 @@ async def test_get_role_permission_relation(
 async def test_get_all_role_permission_relations(
     test_app: AsyncClient,
     jwt_token_admin,
-    seed_role_permission_relation,  # noqa: F401
+    seed_role_permission_relation: RolePermissionRelation,  # noqa: F401
 ):
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
     response = await test_app.get("/api/role-permission-relations/all", headers=headers)

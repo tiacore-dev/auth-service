@@ -4,7 +4,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
 from tortoise.expressions import Q
 
-from app.database.models import Permission, Restriction, Role, RolePermissionRelation
+from app.database.models import (
+    Application,
+    Permission,
+    Restriction,
+    Role,
+    RolePermissionRelation,
+)
 from app.handlers.auth import require_superadmin
 from app.pydantic_models.role_permission_relation_models import (
     RolePermissionRelationCreateSchema,
@@ -31,12 +37,13 @@ async def add_role_permission_relation(
 ):
     await validate_exists(Role, data.role_id, "Роль")
     await validate_exists(Permission, data.permission_id, "Разрешение")
-
     await validate_exists(Restriction, data.restriction_id, "Запрет")
+    await validate_exists(Application, data.application_id, "Приложение")
     relation = await RolePermissionRelation.create(
         role_id=data.role_id,
         permission_id=data.permission_id,
         restriction_id=data.restriction_id,
+        application_id=data.application_id,
     )
     return {"role_permission_id": str(relation.id)}
 
@@ -61,6 +68,7 @@ async def update_role_permission_relation(
         ("role_id", Role, "Роль"),
         ("permission_id", Permission, "Разрешение"),
         ("restriction_id", Restriction, "Запрет"),
+        ("application_id", Application, "Приложение"),
     ]:
         if field in update_data:
             await validate_exists(model, update_data[field], label)
@@ -119,7 +127,7 @@ async def get_role_permission_relations(
         relations = (
             await RolePermissionRelation.filter(query)
             .order_by(sort_field)
-            .prefetch_related("role", "permission", "restriction")
+            .prefetch_related("role", "permission", "restriction", "application")
             .offset((filters["page"] - 1) * filters["page_size"])
             .limit(filters["page_size"])
         )
@@ -132,6 +140,7 @@ async def get_role_permission_relations(
                     role_id=rel.role.id,
                     permission_id=rel.permission.id,
                     restriction_id=rel.restriction.id if rel.restriction else None,
+                    application_id=rel.application.id,
                     created_at=rel.created_at,
                 )
                 for rel in relations
@@ -152,7 +161,7 @@ async def get_role_permission_relation(
 ):
     rel = (
         await RolePermissionRelation.filter(id=role_permission_id)
-        .prefetch_related("role", "permission", "restriction")
+        .prefetch_related("role", "permission", "restriction", "application")
         .first()
     )
 
@@ -164,5 +173,6 @@ async def get_role_permission_relation(
         role_id=rel.role.id,
         permission_id=rel.permission.id,
         restriction_id=rel.restriction.id if rel.restriction else None,
+        application_id=rel.application.id,
         created_at=rel.created_at,
     )

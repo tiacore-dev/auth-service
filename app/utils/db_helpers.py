@@ -36,16 +36,14 @@ async def create_test_data():
     from app.database.models import Application, Company, Role
 
     try:
-        app_instance, _ = await Application.get_or_create(
+        await Application.get_or_create(
             id="crm_app", defaults={"name": "CRM application"}
         )
+        await Application.get_or_create(id="observer_app", name="Observer service")
+        await Application.get_or_create(id="auth_app", name="Сервис аутентификации")
         await Company.get_or_create(name="Tiacore")
-        await Role.get_or_create(
-            name="Администратор", system_name="admin", application_id=app_instance.id
-        )
-        await Role.get_or_create(
-            name="Пользователь", system_name="user", application_id=app_instance.id
-        )
+        await Role.get_or_create(name="Администратор", system_name="admin")
+        await Role.get_or_create(name="Пользователь", system_name="user")
 
     except Exception as e:
         print(f"Exception: {e}")

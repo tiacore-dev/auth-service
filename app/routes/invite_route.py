@@ -2,7 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from loguru import logger
 
 from app.config import get_settings
-from app.database.models import Company, User, UserCompanyRelation, create_user
+from app.database.models import (
+    Application,
+    Company,
+    User,
+    UserCompanyRelation,
+    create_user,
+)
 from app.handlers.auth import (
     create_access_token,
     create_refresh_token,
@@ -31,7 +37,11 @@ async def invite_user(data: InviteRequest, _=Depends(get_current_user)):
         "role_id": str(data.role_id),
     }
     token = generate_token(payload)
-
+    application = await Application.get_or_none(id=data.application_id)
+    if not application:
+        raise HTTPException(
+            status_code=400, detail="Попытка пригласить в несуществующее приложение"
+        )
     existing_user = await User.get_or_none(email=data.email)
     if existing_user:
         verification_link = f"{settings.FRONT_ORIGIN}/accept-invite?token={token}"
@@ -41,7 +51,7 @@ async def invite_user(data: InviteRequest, _=Depends(get_current_user)):
         body = f"""
         Здравствуйте!
 
-        Вас пригласили в компанию: {company.name} внутри Tiacore CRM. 
+        Вас пригласили в компанию: {company.name} внутри {application.name}. 
         Для подтверждения перейдите по ссылке:
 
         {verification_link}
@@ -57,7 +67,7 @@ async def invite_user(data: InviteRequest, _=Depends(get_current_user)):
     body = f"""
     Здравствуйте!
 
-    Вас пригласили в Tiacore CRM. Для регистрации перейдите по ссылке:
+    Вас пригласили в {application.name}. Для регистрации перейдите по ссылке:
 
     {verification_link}
 
@@ -95,15 +105,11 @@ async def register_with_token(data: RegisterRequest, token: str = Query(...)):
             user=user, company_id=company_id, role_id=role_id
         )
     return TokenResponse(
-        access_token=create_access_token(
-            {"sub": user.email, "user_id": user.id, "application": data.application_id}
-        ),
-        refresh_token=create_refresh_token(
-            {"sub": user.email, "user_id": user.id, "application": data.application_id}
-        ),
+        access_token=create_access_token({"sub": user.email}),
+        refresh_token=create_refresh_token({"sub": user.email}),
         permissions=None
         if user.is_superadmin
-        else await get_company_permissions_for_user(user, data.application_id),
+        else await get_company_permissions_for_user(user),
         is_superadmin=user.is_superadmin,
         user_id=user.id,
     )

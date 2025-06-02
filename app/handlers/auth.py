@@ -80,17 +80,16 @@ async def verify_token(token: str) -> dict:
         if email is None:
             logger.warning("❌ Токен не содержит 'sub'. Отказ в доступе.")
             raise HTTPException(status_code=401, detail="Invalid token")
-        application_id = payload.get("application_id")
 
         user = await User.get_or_none(email=email)
-        if not user or not application_id:
+        if not user:
             logger.warning(
                 "❌ Пользователь или application не найдены. Отказ в доступе."
             )
             raise HTTPException(
                 status_code=401, detail="Invalid token or missing application"
             )
-        permissions = await get_company_permissions_for_user(user, application_id)
+        permissions = await get_company_permissions_for_user(user)
         token_data = {
             "email": email,
             "permissions": permissions,
@@ -105,7 +104,7 @@ async def verify_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail="Invalid or expired token") from e
 
 
-async def login_handler(email: str, password: str, application: str):
+async def login_handler(email: str, password: str):
     user = await User.get_or_none(email=email)
 
     if not user:
@@ -119,7 +118,7 @@ async def login_handler(email: str, password: str, application: str):
     if not user.is_verified and not user.is_superadmin:
         raise HTTPException(status_code=403, detail="Необходимо верифицировать email")
 
-    company_permissions = await get_company_permissions_for_user(user, application)
+    company_permissions = await get_company_permissions_for_user(user)
 
     return user, company_permissions
 

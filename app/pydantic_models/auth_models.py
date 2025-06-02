@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from pydantic import UUID4, BaseModel, Field, model_validator
+from pydantic import UUID4, BaseModel, model_validator
 
 
 class RolePermissionBlock(BaseModel):
@@ -11,7 +11,7 @@ class RolePermissionBlock(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
-    permissions: Optional[Dict[str, List[RolePermissionBlock]]] = None
+    permissions: Optional[Dict[str, Dict[str, List[dict]]]] = None
     is_superadmin: bool
     user_id: UUID4
 
@@ -30,7 +30,6 @@ class TokenResponse(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
-    application_id: str = Field(..., alias="application_id")
 
 
 class RegisterRequest(BaseModel):
@@ -38,12 +37,10 @@ class RegisterRequest(BaseModel):
     password: str
     full_name: str
     position: Optional[str] = None
-    application_id: str
 
 
 class RefreshRequest(BaseModel):
     refresh_token: str
-    application_id: str
 
 
 class RegisterResponse(BaseModel):

@@ -4,8 +4,12 @@ from uuid import UUID
 from fastapi import Depends, HTTPException, Path, Query
 from loguru import logger
 
+from app.config import get_settings
 from app.database.models import UserCompanyRelation
 from app.handlers.auth import get_current_user
+from app.pydantic_models.auth_models import RolePermissionBlock
+
+settings = get_settings()
 
 
 async def get_current_context(
@@ -16,11 +20,12 @@ async def get_current_context(
     is_token_superadmin = token_data.get("is_superadmin")
     user_id = token_data["user_id"]
     logger.debug(f"[DEBUG TOKEN DATA] permissions={token_data['permissions']}")
-
+    application = settings.APP
     if is_token_superadmin:
         return {
             "user": user_id,
             "company": company,
+            "application": application,
             "role": "superadmin",
             "permissions": ["*"],
             "is_superadmin": True,
@@ -31,21 +36,27 @@ async def get_current_context(
     has_relations = bool(relations)
 
     permissions = []
-    if company:
-        raw_entries = permissions_map.get(str(company), {})
+    raw_blocks = []
+
+    if company and application:
+        raw_entries = permissions_map.get(application, {}).get(str(company), [])
         for entry in raw_entries:
+            if isinstance(entry, dict):
+                entry = RolePermissionBlock(**entry)
             permissions.extend(entry.permissions)
+            raw_blocks.append(entry)
 
         logger.debug(
-            f"""[DEBUG CONTEXT] company={company}, raw={raw_entries}, 
-            flat_permissions={permissions}"""
+            f"[DEBUG CONTEXT] application={application}, company={company}, "
+            f"raw={raw_entries}, flat_permissions={permissions}"
         )
 
     return {
         "user": user_id,
         "company": company,
-        "role": None,
+        "application": application,
         "permissions": permissions,
+        "raw_permission_blocks": raw_blocks,
         "is_superadmin": False,
         "has_relations": has_relations,
     }

@@ -30,7 +30,7 @@ async def add_role(
 ):
     logger.info(f"Создание роли: {data.model_dump()}")
     try:
-        role = await Role.create(name=data.name, application_id=data.application_id)
+        role = await Role.create(name=data.name)
         logger.success(f"Роль {role.name} ({role.id}) успешно создана")
         return {"role_id": role.id}
     except (KeyError, TypeError, ValueError) as e:
@@ -50,7 +50,7 @@ async def add_many_roles(
 ):
     logger.info(f"Создание роли: {data.model_dump()}")
     try:
-        role = await Role.create(name=data.name, application_id=data.application_id)
+        role = await Role.create(name=data.name)
         await RolePermissionRelation.bulk_create(
             [
                 RolePermissionRelation(role_id=role.id, permission_id=permission_id)
@@ -135,8 +135,6 @@ async def get_roles(
     query = Q()
     if filters.role_name:
         query &= Q(name__icontains=filters.role_name)
-    if filters.application_id:
-        query &= Q(application_id=filters.application_id)
 
     if filters.order not in ("asc", "desc"):
         raise HTTPException(
@@ -152,7 +150,7 @@ async def get_roles(
         .order_by(sort_field)
         .offset((filters.page - 1) * filters.page_size)
         .limit(filters.page_size)
-        .values("id", "name", "system_name", "application_id")
+        .values("id", "name", "system_name")
     )
 
     roles = [RoleSchema(**role) for role in roles_raw]
@@ -170,7 +168,11 @@ async def get_role(
     role_raw = (
         await Role.filter(id=role_id)
         .first()
-        .values("id", "name", "system_name", "application_id")
+        .values(
+            "id",
+            "name",
+            "system_name",
+        )
     )
 
     if not role_raw:

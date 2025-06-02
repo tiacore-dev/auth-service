@@ -49,6 +49,7 @@ class BaseConfig(BaseSettings):
     CHAT_ID: str | None = None
     REDIS_URL: str | None = None
     NGROK_TOKEN: str | None = None
+    APP: str = " "
 
     class Config:
         env_file = ".env"

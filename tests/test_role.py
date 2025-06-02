@@ -1,16 +1,14 @@
 import pytest
 from httpx import AsyncClient
 
-from app.database.models import Application, Role
+from app.database.models import Role
 
 
 @pytest.mark.asyncio
-async def test_add_role(
-    test_app: AsyncClient, jwt_token_admin: dict, seed_application: Application
-):
+async def test_add_role(test_app: AsyncClient, jwt_token_admin: dict):
     """Тест добавления новой роли."""
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
-    data = {"role_name": "Test Role", "application_id": seed_application.id}
+    data = {"role_name": "Test Role"}
 
     response = await test_app.post("/api/roles/add", headers=headers, json=data)
     assert response.status_code == 201, (

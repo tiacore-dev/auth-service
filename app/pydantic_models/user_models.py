@@ -19,9 +19,6 @@ class UserCreateSchema(CleanableBaseModel):
         None, max_length=50, description="Должность пользователя"
     )
     company_id: UUID = Field(...)
-    application_id: str = Field(
-        ..., min_length=3, max_length=50, description="Название приложения"
-    )
 
     class Config:
         from_attributes = True

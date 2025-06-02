@@ -17,20 +17,14 @@ auth_router = APIRouter()
 
 @auth_router.post("/login", response_model=TokenResponse)
 async def login(data: LoginRequest):
-    result = await login_handler(data.email, data.password, data.application_id)
+    result = await login_handler(data.email, data.password)
     if not result:
         raise HTTPException(status_code=401, detail="Неверные учетные данные")
 
     user, company_permissions = result
     logger.debug(f"Полученные разрешения: {company_permissions}")
     return TokenResponse(
-        access_token=create_access_token(
-            {
-                "sub": user.email,
-                "user_id": str(user.id),
-                "application_id": str(data.application_id),
-            }
-        ),
+        access_token=create_access_token({"sub": user.email}),
         refresh_token=create_refresh_token({"sub": user.email}),
         permissions=None if user.is_superadmin else company_permissions,
         is_superadmin=user.is_superadmin,
@@ -55,20 +49,12 @@ async def refresh_access_token(data: RefreshRequest):
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
 
-        company_permissions = await get_company_permissions_for_user(
-            user, data.application_id
-        )
+        company_permissions = await get_company_permissions_for_user(user)
         logger.debug(f"🧪 is_superadmin: {user.is_superadmin}")
         logger.debug(f"🧪 permissions: {company_permissions}")
 
         return TokenResponse(
-            access_token=create_access_token(
-                {
-                    "sub": email,
-                    "user_id": str(user.id),
-                    "application_id": str(data.application_id),
-                }
-            ),
+            access_token=create_access_token({"sub": email}),
             refresh_token=create_refresh_token({"sub": email}),
             permissions=None if user.is_superadmin else company_permissions,
             is_superadmin=user.is_superadmin,

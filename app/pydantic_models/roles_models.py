@@ -8,7 +8,6 @@ from app.pydantic_models.clean_model import CleanableBaseModel
 
 class RoleCreateSchema(CleanableBaseModel):
     name: str = Field(..., alias="role_name")
-    application_id: str = Field(...)
 
     class Config:
         from_attributes = True
@@ -20,7 +19,6 @@ class RoleCreateManySchema(CleanableBaseModel):
     permissions: List[str] = Field(
         ..., description="Список ID разрешений, которые будут назначены этой роли"
     )
-    application_id: str
 
     class Config:
         from_attributes = True
@@ -31,7 +29,6 @@ class RoleSchema(CleanableBaseModel):
     id: UUID = Field(..., alias="role_id")
     name: str = Field(..., alias="role_name")
     system_name: Optional[str] = Field(None, alias="role_system_name")
-    application_id: str
 
     class Config:
         from_attributes = True
@@ -63,7 +60,6 @@ class RoleEditSchema(CleanableBaseModel):
 
 class RoleFilterSchema(CleanableBaseModel):
     role_name: Optional[str] = Field(None, description="Фильтр по роли")
-    application_id: Optional[str] = Field(None, description="ID приложения")
     sort_by: str = Field("name", description="Поле сортировки")
     order: str = Field("asc", description="asc или desc")
     page: int = Field(1, ge=1)
