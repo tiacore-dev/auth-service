@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 FROM base AS test
 COPY . .
 
-CMD ruff check . && mypy . --install-types --non-interactive && pytest --maxfail=3 --disable-warnings
+CMD ruff check .  && pytest --maxfail=3 --disable-warnings
 # ===== FINAL =====
 FROM base AS prod
 

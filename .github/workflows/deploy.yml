@@ -204,7 +204,8 @@ jobs:
           📝 *Коммит:* $ESCAPED_COMMIT_MESSAGE${EXTRA_LINK}"
 
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="$CHAT_ID" \
-            -d parse_mode=Markdown \
-            -d "text=$TEXT" || exit 1
+            --data-urlencode chat_id="$CHAT_ID" \
+            --data-urlencode parse_mode=Markdown \
+            --data-urlencode text="$TEXT" || exit 1
+
 
