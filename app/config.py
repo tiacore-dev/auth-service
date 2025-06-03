@@ -1,10 +1,12 @@
+import os
 from enum import Enum
 from functools import lru_cache
 
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
-load_dotenv()
+ENV_FILE = ".env.test" if os.getenv("CI") == "true" else ".env"
+load_dotenv(dotenv_path=ENV_FILE)
 
 
 class ConfigName(str, Enum):
@@ -44,7 +46,7 @@ class BaseConfig(BaseSettings):
     DOCKERHUB_USERNAME: str | None = None
     CONFIG_NAME: str = "DEVELOPMENT"
 
-    APP: str = " "
+    APP: str = ""
 
     class Config:
         env_file = ".env"
