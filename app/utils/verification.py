@@ -4,12 +4,8 @@ from aiosmtplib import SMTP
 from fastapi import HTTPException
 from loguru import logger
 
-from app.config import get_settings
 
-settings = get_settings()
-
-
-async def send_email(to_email: str, body: str):
+async def send_email(to_email: str, body: str, settings):
     if (
         not settings.SMTP_PASSWORD
         or not settings.SMTP_PORT

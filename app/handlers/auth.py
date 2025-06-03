@@ -1,36 +1,34 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import HTTPException, Security
+from fastapi import Depends, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 from loguru import logger
 
 from app.auth_schemas import bearer_scheme
-from app.config import get_settings
+from app.config import BaseConfig, TestConfig, get_settings
 from app.database.models import User
 from app.utils.permissions_get import get_company_permissions_for_user
 
 # Конфигурация JWT
-settings = get_settings()
-SECRET_KEY = settings.SECRET_KEY
-ALGORITHM = settings.ALGORITHM
-ACCESS_TOKEN_EXPIRE_MINUTES = int(settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-REFRESH_TOKEN_EXPIRE_DAYS = int(settings.REFRESH_TOKEN_EXPIRE_DAYS)
-JWT_EXPIRATION_HOURS = int(settings.JWT_EXPIRATION_HOURS)
 
 
-def generate_token(payload: dict, expires_in_hours: int = JWT_EXPIRATION_HOURS) -> str:
+def generate_token(
+    payload: dict, settings: BaseConfig | TestConfig, expires_in_hours: int = 1
+) -> str:
     payload = {
         **payload,
         "exp": datetime.now(timezone.utc) + timedelta(hours=expires_in_hours),
     }
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return token
 
 
-def verify_jwt_token(token: str) -> dict:
+def verify_jwt_token(token: str, settings: BaseConfig | TestConfig) -> dict:
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
         return payload
     except JWTError as e:
         logger.warning(f"❌ Ошибка при декодировании токена: {str(e)}")
@@ -38,26 +36,30 @@ def verify_jwt_token(token: str) -> dict:
 
 
 def create_access_token(
-    data: dict, expires_delta: timedelta = timedelta(ACCESS_TOKEN_EXPIRE_MINUTES)
+    data: dict, settings: BaseConfig | TestConfig, expires_delta=None
 ):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (
-        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+    )
     return encoded_jwt
 
 
 # Проверка токена
 
 
-def create_refresh_token(data: dict):
-    return create_access_token(data, timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
+def create_refresh_token(data: dict, settings: BaseConfig | TestConfig):
+    expires = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    return create_access_token(data, settings=settings, expires_delta=expires)
 
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
+    settings: BaseConfig | TestConfig = Depends(get_settings),
 ) -> dict:
     if (
         not credentials
@@ -69,13 +71,15 @@ async def get_current_user(
 
     token = credentials.credentials.strip()
 
-    token_data = await verify_token(token)
+    token_data = await verify_token(token, settings)
     return token_data
 
 
-async def verify_token(token: str) -> dict:
+async def verify_token(token: str, settings: BaseConfig | TestConfig) -> dict:
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
         email = payload.get("sub")
         if email is None:
             logger.warning("❌ Токен не содержит 'sub'. Отказ в доступе.")
@@ -125,13 +129,14 @@ async def login_handler(email: str, password: str):
 
 async def require_superadmin(
     credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
+    settings: BaseConfig | TestConfig = Depends(get_settings),
 ) -> dict:
     if not credentials or not credentials.credentials.strip():
         logger.warning("❌ Отсутствует или пустой токен Authorization")
         raise HTTPException(status_code=401, detail="Missing or empty token")
 
     token = credentials.credentials.strip()
-    user_data = await verify_token(token)
+    user_data = await verify_token(token, settings)
 
     email = user_data.get("email")
     if not email:

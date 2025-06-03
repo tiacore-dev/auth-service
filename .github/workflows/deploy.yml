@@ -54,7 +54,6 @@ jobs:
             --rm \
             --add-host=host.docker.internal:host-gateway \
             --env-file .env.test \
-            -e CI=true \
             auth-service-test
 
 

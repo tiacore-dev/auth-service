@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from loguru import logger
 
-from app.config import get_settings
+from app.config import BaseConfig, TestConfig, get_settings
 from app.database.models import (
     Application,
     Company,
@@ -24,19 +24,19 @@ from app.pydantic_models.auth_models import (
 from app.utils.permissions_get import get_company_permissions_for_user
 from app.utils.verification import send_email
 
-settings = get_settings()
-
 invite_router = APIRouter()
 
 
 @invite_router.post("/invite", status_code=201)
-async def invite_user(data: InviteRequest, _=Depends(get_current_user)):
+async def invite_user(
+    data: InviteRequest, _=Depends(get_current_user), settings=Depends(get_settings)
+):
     payload = {
         "sub": data.email,
         "company_id": str(data.company_id),
         "role_id": str(data.role_id),
     }
-    token = generate_token(payload)
+    token = generate_token(payload, settings)
     application = await Application.get_or_none(id=data.application_id)
     if not application:
         raise HTTPException(
@@ -58,7 +58,7 @@ async def invite_user(data: InviteRequest, _=Depends(get_current_user)):
 
         Если вас пригласили по ошибке, проигнорируйте это письмо.
         """
-        await send_email(data.email, body)
+        await send_email(data.email, body, settings)
         return
 
     verification_link = (
@@ -72,14 +72,18 @@ async def invite_user(data: InviteRequest, _=Depends(get_current_user)):
     {verification_link}
 
     """
-    await send_email(data.email, body)
+    await send_email(data.email, body, settings)
     return
 
 
 @invite_router.post(
     "/register-with-token", response_model=TokenResponse, status_code=201
 )
-async def register_with_token(data: RegisterRequest, token: str = Query(...)):
+async def register_with_token(
+    data: RegisterRequest,
+    token: str = Query(...),
+    settings: BaseConfig | TestConfig = Depends(get_settings),
+):
     user = await create_user(
         email=data.email,
         password=data.password,
@@ -89,7 +93,7 @@ async def register_with_token(data: RegisterRequest, token: str = Query(...)):
     user.is_verified = True
     await user.save()
 
-    token_data = verify_jwt_token(token)
+    token_data = verify_jwt_token(token, settings)
     company_id = token_data.get("company_id")
     role_id = token_data.get("role_id")
     if not company_id or not role_id:
@@ -105,8 +109,8 @@ async def register_with_token(data: RegisterRequest, token: str = Query(...)):
             user=user, company_id=company_id, role_id=role_id
         )
     return TokenResponse(
-        access_token=create_access_token({"sub": user.email}),
-        refresh_token=create_refresh_token({"sub": user.email}),
+        access_token=create_access_token({"sub": user.email}, settings),
+        refresh_token=create_refresh_token({"sub": user.email}, settings),
         permissions=None
         if user.is_superadmin
         else await get_company_permissions_for_user(user),
@@ -116,9 +120,11 @@ async def register_with_token(data: RegisterRequest, token: str = Query(...)):
 
 
 @invite_router.get("/accept-invite", status_code=201)
-async def accept_invite(token: str = Query(...)):
+async def accept_invite(
+    token: str = Query(...), settings: BaseConfig | TestConfig = Depends(get_settings)
+):
     logger.info(f"Получен токен: {token}")
-    token_data = verify_jwt_token(token)
+    token_data = verify_jwt_token(token, settings)
     company_id = token_data.get("company_id")
     role_id = token_data.get("role_id")
     email = token_data.get("sub")

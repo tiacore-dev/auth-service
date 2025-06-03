@@ -1,12 +1,15 @@
-import os
 from enum import Enum
 from functools import lru_cache
 
 from dotenv import load_dotenv
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ENV_FILE = ".env.test" if os.getenv("CI") == "true" else ".env"
-load_dotenv(dotenv_path=ENV_FILE)
+
+def select_env(config_name: str):
+    if config_name.lower() == "test":
+        load_dotenv(".env.test", override=True)
+    else:
+        load_dotenv(".env", override=True)
 
 
 class ConfigName(str, Enum):
@@ -46,20 +49,43 @@ class BaseConfig(BaseSettings):
     DOCKERHUB_USERNAME: str | None = None
     CONFIG_NAME: str = "DEVELOPMENT"
 
-    APP: str = ""
+    APP: str | None = None
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        extra = "ignore"  # <––– вот это добавь
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     @property
     def db_url(self) -> str:
         raise NotImplementedError("db_url not implemented in base config")
 
 
-class TestConfig(BaseConfig):
+class TestConfig(BaseSettings):
     TEST_DATABASE_URL: str = "sqlite://db.sqlite3"
+    APP: str = "test_app"
+    SECRET_KEY: str = "default_secret"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    JWT_EXPIRATION_HOURS: int = 2
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    ALGORITHM: str = "HS256"
+    SMTP_SERVER: str | None = None
+    SMTP_PORT: int | None = None
+    SMTP_USERNAME: str | None = None
+    SMTP_PASSWORD: str | None = None
+    FRONT_ORIGIN: str | None = None
+    BACK_ORIGIN: str | None = None
+
+    model_config = SettingsConfigDict(
+        env_file=".env.test",
+        env_file_encoding="utf-8",
+        extra="ignore",  # необязательно, но рекомендую
+    )
+
+    def __init__(self, **kwargs):
+        print("✅ LOADING TestConfig")
+        super().__init__(**kwargs)
 
     @property
     def db_url(self) -> str:
@@ -98,8 +124,7 @@ class ProdConfig(BaseConfig):
         return self.DATABASE_URL
 
 
-@lru_cache
-def get_settings(config_name: str = "Development") -> BaseConfig:
+def _load_settings(config_name: str):
     match ConfigName(config_name):
         case ConfigName.TEST:
             return TestConfig()
@@ -113,3 +138,11 @@ def get_settings(config_name: str = "Development") -> BaseConfig:
             return ServerConfig()
         case _:
             raise ValueError(f"❌ Unknown config_name: {config_name}")
+
+
+@lru_cache
+def get_settings() -> BaseConfig | TestConfig:
+    print("⚠️ get_settings() вызван напрямую (через Depends)")
+    raise RuntimeError(
+        "⚠️ get_settings() должен быть переопределён в dependency_overrides!"
+    )

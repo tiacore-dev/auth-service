@@ -9,12 +9,11 @@ from app.database.models import UserCompanyRelation
 from app.handlers.auth import get_current_user
 from app.pydantic_models.auth_models import RolePermissionBlock
 
-settings = get_settings()
-
 
 async def get_current_context(
     token_data: dict = Depends(get_current_user),
     company: Optional[UUID] = Query(None, description="ID компании"),
+    settings=Depends(get_settings),
 ):
     permissions_map = token_data.get("permissions", {})
     is_token_superadmin = token_data.get("is_superadmin")

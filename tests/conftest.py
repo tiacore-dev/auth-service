@@ -1,12 +1,18 @@
 import pytest
 from httpx import AsyncClient
+from loguru import logger
 from tortoise import Tortoise
 
 from app import create_app
-from app.config import ConfigName, get_settings
+from app.config import ConfigName, _load_settings
 from app.database.models import Application, User, create_user
 from app.handlers.auth import create_access_token, create_refresh_token, login_handler
 from app.utils.db_helpers import drop_all_tables
+
+
+@pytest.fixture(scope="session")
+def test_settings():
+    return _load_settings(ConfigName.TEST)
 
 
 @pytest.fixture(scope="session")
@@ -19,11 +25,11 @@ async def test_app():
 
 @pytest.fixture(scope="function", autouse=True)
 @pytest.mark.asyncio
-async def setup_and_clean_db():
-    settings = get_settings(config_name=ConfigName.TEST)
+async def setup_and_clean_db(test_settings):
+    logger.info(f"db_url: {test_settings.db_url}, app: {test_settings.APP}")
     await Tortoise.init(
         config={
-            "connections": {"default": settings.db_url},
+            "connections": {"default": test_settings.db_url},
             "apps": {
                 "models": {
                     "models": ["app.database.models"],
@@ -78,7 +84,7 @@ async def seed_admin():
 
 @pytest.fixture(scope="function")
 @pytest.mark.asyncio
-async def jwt_token_user(seed_user: User, seed_application: Application):
+async def jwt_token_user(seed_user: User, seed_application: Application, test_settings):
     """Генерирует JWT токен для обычного пользователя."""
     token_data = {
         "sub": seed_user.email,
@@ -86,26 +92,28 @@ async def jwt_token_user(seed_user: User, seed_application: Application):
         "application_id": str(seed_application.id),
     }
     return {
-        "access_token": create_access_token(token_data),
-        "refresh_token": create_refresh_token(token_data),
+        "access_token": create_access_token(token_data, test_settings),
+        "refresh_token": create_refresh_token(token_data, test_settings),
     }
 
 
 @pytest.fixture(scope="function")
 @pytest.mark.asyncio
-async def jwt_token_admin(seed_admin: User, seed_application: Application):
+async def jwt_token_admin(
+    seed_admin: User, seed_application: Application, test_settings
+):
     """Генерирует JWT токен для администратора."""
     token_data = {
         "sub": seed_admin.email,
     }
     return {
-        "access_token": create_access_token(token_data),
-        "refresh_token": create_refresh_token(token_data),
+        "access_token": create_access_token(token_data, test_settings),
+        "refresh_token": create_refresh_token(token_data, test_settings),
     }
 
 
 @pytest.fixture
-def get_token_for_user():
+def get_token_for_user(test_settings):
     async def _get_token(user: User, password="123"):
         auth_result = await login_handler(user.email, password)
         if not auth_result:
@@ -114,7 +122,8 @@ def get_token_for_user():
         return create_access_token(
             {
                 "sub": user_obj.email,
-            }
+            },
+            test_settings,
         )
 
     return _get_token
