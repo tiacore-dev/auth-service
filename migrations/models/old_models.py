@@ -158,10 +158,14 @@ class UserCompanyRelation(Model):
         on_delete=fields.CASCADE,
     )
     user = fields.ForeignKeyField(
-        "diff_models.User", related_name="user_company_relations", on_delete=fields.CASCADE
+        "diff_models.User",
+        related_name="user_company_relations",
+        on_delete=fields.CASCADE,
     )
     role = fields.ForeignKeyField(
-        "diff_models.Role", related_name="user_company_relations", on_delete=fields.CASCADE
+        "diff_models.Role",
+        related_name="user_company_relations",
+        on_delete=fields.CASCADE,
     )
     created_at = fields.DatetimeField(auto_now_add=True)
 
@@ -218,7 +222,6 @@ class EntityCompanyRelation(Model):
     class Meta:
         table = "entity_company_relations"
 
-from tortoise import Model, fields
 
 MAX_VERSION_LENGTH = 255
 
@@ -229,4 +232,3 @@ class Aerich(Model):
 
     class Meta:
         ordering = ["-id"]
-
