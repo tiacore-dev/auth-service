@@ -209,7 +209,16 @@ jobs:
           DEPLOY_STATUS="${{ needs.deploy.result }}"
           if [ "$DEPLOY_STATUS" != "success" ]; then
             STATUS="🛑 Ошибка деплоя"
-            EXTRA_LINK="\n\n\[🔍 Открыть GitHub Actions\]($RUN_URL)"
+            escape_markdown_url() {
+              echo "$1" | sed -e 's/\//\\\//g' \
+                              -e 's/(/\\(/g' \
+                              -e 's/)/\\)/g' \
+                              -e 's/\./\\./g' \
+                              -e 's/\-/\\-/g'
+            }
+
+            RUN_URL_ESCAPED=$(escape_markdown_url "$RUN_URL")
+            EXTRA_LINK="\n\n\\[🔍 Открыть GitHub Actions\\]($RUN_URL_ESCAPED)"
           else
             STATUS="✅ Деплой успешен"
             EXTRA_LINK=""
