@@ -48,16 +48,16 @@ jobs:
         run: |
           docker buildx build \
             --target test \
-            --cache-from=type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-tiacore:buildcache \
-            --cache-to=type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-tiacore:buildcache,mode=max \
+            --cache-from=type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-service:buildcache \
+            --cache-to=type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-service:buildcache,mode=max \
             --load \
-            -t auth-tiacore-test .
+            -t auth-service-test .
 
           docker run \
             --rm \
             --add-host=host.docker.internal:host-gateway \
             --env-file .env.test \
-            auth-tiacore-test
+            auth-service-test
 
 
 
@@ -73,9 +73,9 @@ jobs:
           context: .
           push: true
           target: prod
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/auth-tiacore:${{ github.sha }}
-          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-tiacore:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-tiacore:buildcache,mode=max
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:${{ github.sha }}
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-service:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-service:buildcache,mode=max
 
 
 
@@ -96,11 +96,11 @@ jobs:
       - name: Determine Deployment Path and Tag
         run: |
           if [[ "${{ github.ref_name }}" == "master" ]]; then
-            echo "DEPLOY_PATH=apps/auth-tiacore" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=apps/auth-service" >> $GITHUB_ENV
           elif [[ "${{ github.ref_name }}" == "dev" ]]; then
-            echo "DEPLOY_PATH=apps/auth-tiacore-dev" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=apps/auth-service-dev" >> $GITHUB_ENV
           elif [[ "${{ github.ref_name }}" == "stage" ]]; then
-            echo "DEPLOY_PATH=apps/auth-tiacore-stage" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=apps/auth-service-stage" >> $GITHUB_ENV
           else
             echo "❌ Неизвестная ветка! Прерываем процесс."
             exit 1
@@ -123,7 +123,7 @@ jobs:
             echo "\$DOCKERHUB_TOKEN" | docker login -u "\$DOCKERHUB_USERNAME" --password-stdin \
               || { echo "❌ Docker login failed"; exit 1; }
 
-            docker pull \$DOCKERHUB_USERNAME/auth-tiacore:\$DEPLOY_TAG \
+            docker pull \$DOCKERHUB_USERNAME/auth-service:\$DEPLOY_TAG \
               || { echo "❌ Docker pull failed"; exit 1; }
 
             if [ ! -f .env ]; then touch .env; fi
@@ -147,7 +147,7 @@ jobs:
               -e PYTHONPATH=/app \
               -e TORTOISE_ORM=app.database.config.TORTOISE_ORM \
               --network auth_network \
-              \$DOCKERHUB_USERNAME/auth-tiacore:\$TAG aerich upgrade || {
+              \$DOCKERHUB_USERNAME/auth-service:\$TAG aerich upgrade || {
                 echo "⚠️ Aerich завершился с ошибкой"
                 exit 1
             }

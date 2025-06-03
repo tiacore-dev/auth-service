@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from .application_route import application_router
 from .auth_route import auth_router
 from .company_route import company_router
 from .entity_company_relation_route import entity_relation_router
@@ -50,4 +51,7 @@ def register_routes(app: FastAPI):
         entity_relation_router,
         prefix="/api/entity-company-relations",
         tags=["EntityCompanyRelations"],
+    )
+    app.include_router(
+        application_router, prefix="/api/applications", tags=["Applications"]
     )

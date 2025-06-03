@@ -45,10 +45,7 @@ class BaseConfig(BaseSettings):
 
     DOCKERHUB_USERNAME: str | None = None
     CONFIG_NAME: str = "DEVELOPMENT"
-    BOT_TOKEN: str | None = None
-    CHAT_ID: str | None = None
-    REDIS_URL: str | None = None
-    NGROK_TOKEN: str | None = None
+
     APP: str = " "
 
     class Config:
