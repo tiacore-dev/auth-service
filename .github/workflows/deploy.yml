@@ -56,8 +56,7 @@ jobs:
           docker run \
             --rm \
             --add-host=host.docker.internal:host-gateway \
-            --env-file .env.test \
-            -e CI=true \      
+            --env-file .env.test \ 
             auth-service-test
 
 
@@ -196,7 +195,7 @@ jobs:
 
           CHAT_ID="${{ secrets.TELEGRAM_CHAT_ID }}"
 
-          ESCAPED_COMMIT_MESSAGE=$(echo "$COMMIT_MESSAGE" | sed -E 's/([*_`\[\]()])/\\\1/g')
+          ESCAPED_COMMIT_MESSAGE=$(echo -e "$COMMIT_MESSAGE" | sed -E 's/([*_`\[\]()])/\\\1/g')
           TEXT="${STATUS}
 
           📦 *Ветка:* \`$REF_NAME\`

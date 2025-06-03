@@ -1,12 +1,10 @@
-import os
 from enum import Enum
 from functools import lru_cache
 
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
-ENV_FILE = ".env.test" if os.getenv("CI") == "true" else ".env"
-load_dotenv(dotenv_path=ENV_FILE)
+load_dotenv()
 
 
 class ConfigName(str, Enum):
