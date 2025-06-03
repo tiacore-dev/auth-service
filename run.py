@@ -8,7 +8,7 @@ from app.config import ConfigName
 load_dotenv()
 
 # Порт и биндинг
-PORT = os.getenv("PORT", 8000)
+PORT = 8000
 CONFIG_NAME = ConfigName(os.getenv("CONFIG_NAME", "Development"))
 
 

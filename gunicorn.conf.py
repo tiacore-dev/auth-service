@@ -1,11 +1,7 @@
-import os
 from multiprocessing import cpu_count
 
-from dotenv import load_dotenv
-
-load_dotenv()
 # Получаем порт из переменной окружения или 5015
-PORT = os.getenv("PORT")
+PORT = 8000
 
 bind = f"0.0.0.0:{PORT}"  # Указываем динамический порт
 worker_class = "uvicorn.workers.UvicornWorker"
