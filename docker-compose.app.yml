@@ -1,8 +1,8 @@
 services:
 
   web:
-    image: ${DOCKERHUB_USERNAME}/auth-backend:${TAG}
-    container_name: auth-backend
+    image: ${DOCKERHUB_USERNAME}/auth-service:${TAG}
+    container_name: auth-service
     tty: true
     stdin_open: true
     restart: always
