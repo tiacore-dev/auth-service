@@ -107,6 +107,10 @@ permissions = [
     ("delete_api_token", "Удаление API токена"),
     ("view_api_token", "Просмотр API токена"),
     ("get_all_api_tokens", "Просмотр всех API токенов"),
+    # Web hooks
+    ("set_webhook", "Добавление вебхука"),
+    ("delete_webhook", "Удаление вебхука"),
+    ("view_webhook_info", "Просмотр информации о вебхуке"),
 ]
 
 

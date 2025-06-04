@@ -24,6 +24,7 @@ def create_app(config_name: ConfigName) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        print("🔥 Lifespan START")
         if type(settings) is BaseConfig:
             from app.database.config import TORTOISE_ORM
 
