@@ -141,7 +141,7 @@ def _load_settings(config_name: str):
 
 
 @lru_cache
-def get_settings() -> BaseConfig | TestConfig:
+def get_settings():
     print("⚠️ get_settings() вызван напрямую (через Depends)")
     raise RuntimeError(
         "⚠️ get_settings() должен быть переопределён в dependency_overrides!"

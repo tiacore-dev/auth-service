@@ -6,16 +6,14 @@ from jose import JWTError, jwt
 from loguru import logger
 
 from app.auth_schemas import bearer_scheme
-from app.config import BaseConfig, TestConfig, get_settings
+from app.config import get_settings
 from app.database.models import User
 from app.utils.permissions_get import get_company_permissions_for_user
 
 # Конфигурация JWT
 
 
-def generate_token(
-    payload: dict, settings: BaseConfig | TestConfig, expires_in_hours: int = 1
-) -> str:
+def generate_token(payload: dict, settings, expires_in_hours: int = 1) -> str:
     payload = {
         **payload,
         "exp": datetime.now(timezone.utc) + timedelta(hours=expires_in_hours),
@@ -24,7 +22,7 @@ def generate_token(
     return token
 
 
-def verify_jwt_token(token: str, settings: BaseConfig | TestConfig) -> dict:
+def verify_jwt_token(token: str, settings) -> dict:
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
@@ -35,9 +33,7 @@ def verify_jwt_token(token: str, settings: BaseConfig | TestConfig) -> dict:
         raise HTTPException(status_code=401, detail="Invalid or expired token") from e
 
 
-def create_access_token(
-    data: dict, settings: BaseConfig | TestConfig, expires_delta=None
-):
+def create_access_token(data: dict, settings, expires_delta=None):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -52,14 +48,14 @@ def create_access_token(
 # Проверка токена
 
 
-def create_refresh_token(data: dict, settings: BaseConfig | TestConfig):
+def create_refresh_token(data: dict, settings):
     expires = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
     return create_access_token(data, settings=settings, expires_delta=expires)
 
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
-    settings: BaseConfig | TestConfig = Depends(get_settings),
+    settings=Depends(get_settings),
 ) -> dict:
     if (
         not credentials
@@ -75,7 +71,7 @@ async def get_current_user(
     return token_data
 
 
-async def verify_token(token: str, settings: BaseConfig | TestConfig) -> dict:
+async def verify_token(token: str, settings) -> dict:
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
@@ -129,7 +125,7 @@ async def login_handler(email: str, password: str):
 
 async def require_superadmin(
     credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
-    settings: BaseConfig | TestConfig = Depends(get_settings),
+    settings=Depends(get_settings),
 ) -> dict:
     if not credentials or not credentials.credentials.strip():
         logger.warning("❌ Отсутствует или пустой токен Authorization")

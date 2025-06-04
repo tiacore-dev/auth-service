@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import make_asgi_app
 from tortoise import Tortoise
 
-from app.config import BaseConfig, ConfigName, _load_settings, get_settings
+from app.config import ConfigName, TestConfig, _load_settings, get_settings
 from app.database.add_permissions import add_initial_permissions
 from app.logger import setup_logger
 from app.routes import register_routes
@@ -25,11 +25,14 @@ def create_app(config_name: ConfigName) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         print("🔥 Lifespan START")
-        if type(settings) is BaseConfig:
+        print(f"Тип настроек: {type(settings)}")
+        if type(settings) is not TestConfig:
             from app.database.config import TORTOISE_ORM
 
             # ✅ Используем твой конфиг напрямую
             await Tortoise.init(config=TORTOISE_ORM)
+            # 💥 ДОБАВЬ ЭТО
+            Tortoise.init_models(["app.database.models"], "models")
             await Tortoise.generate_schemas() if config_name == "Test" else None
 
             # ✅ ORM готова, можно работать с БД

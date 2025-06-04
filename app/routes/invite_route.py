@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from loguru import logger
 
-from app.config import BaseConfig, TestConfig, get_settings
+from app.config import get_settings
 from app.database.models import (
     Application,
     Company,
@@ -82,7 +82,7 @@ async def invite_user(
 async def register_with_token(
     data: RegisterRequest,
     token: str = Query(...),
-    settings: BaseConfig | TestConfig = Depends(get_settings),
+    settings=Depends(get_settings),
 ):
     user = await create_user(
         email=data.email,
@@ -120,9 +120,7 @@ async def register_with_token(
 
 
 @invite_router.get("/accept-invite", status_code=201)
-async def accept_invite(
-    token: str = Query(...), settings: BaseConfig | TestConfig = Depends(get_settings)
-):
+async def accept_invite(token: str = Query(...), settings=Depends(get_settings)):
     logger.info(f"Получен токен: {token}")
     token_data = verify_jwt_token(token, settings)
     company_id = token_data.get("company_id")

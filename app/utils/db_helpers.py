@@ -1,7 +1,6 @@
 from tortoise import Tortoise
 from tortoise.transactions import in_transaction
 
-from app.config import BaseConfig
 from app.database.models import LegalEntity
 
 
@@ -17,7 +16,7 @@ async def drop_all_tables():
             )
 
 
-async def create_admin_user(settings: BaseConfig):
+async def create_admin_user(settings):
     from app.database.models import User, create_user
 
     admin = await User.filter(email="admin").first()

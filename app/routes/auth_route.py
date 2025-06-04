@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from jose import JWTError
 from loguru import logger
 
-from app.config import BaseConfig, TestConfig, get_settings
+from app.config import get_settings
 from app.database.models import User
 from app.handlers.auth import (
     create_access_token,
@@ -17,9 +17,7 @@ auth_router = APIRouter()
 
 
 @auth_router.post("/login", response_model=TokenResponse)
-async def login(
-    data: LoginRequest, settings: BaseConfig | TestConfig = Depends(get_settings)
-):
+async def login(data: LoginRequest, settings=Depends(get_settings)):
     result = await login_handler(data.email, data.password)
     if not result:
         raise HTTPException(status_code=401, detail="Неверные учетные данные")
@@ -38,9 +36,7 @@ async def login(
 @auth_router.post(
     "/refresh", response_model=TokenResponse, summary="Обновление Access Token"
 )
-async def refresh_access_token(
-    data: RefreshRequest, settings: BaseConfig | TestConfig = Depends(get_settings)
-):
+async def refresh_access_token(data: RefreshRequest, settings=Depends(get_settings)):
     try:
         logger.debug("Запрос на рефреш токена")
         refresh_token = data.refresh_token
