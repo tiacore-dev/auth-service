@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
 
 RUN --mount=type=secret,id=lib_repo_token \
-  sh -c 'pip install git+https://x-access-token:$(cat /run/secrets/lib_repo_token)@github.com/tiacore-dev/tiacore-lib.git@master'
+    bash -c "pip install git+https://x-access-token:$(< /run/secrets/lib_repo_token)@github.com/tiacore-dev/tiacore-lib.git@master"
 
 COPY requirements.txt ./
 
