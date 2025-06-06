@@ -3,9 +3,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import make_asgi_app
+from tiacore_lib.config import ConfigName, _load_settings, get_settings
 from tortoise import Tortoise
 
-from app.config import ConfigName, TestConfig, _load_settings, get_settings
+from app.config import TestConfig
 from app.database.add_permissions import add_initial_permissions
 from app.logger import setup_logger
 from app.routes import register_routes

@@ -2,6 +2,15 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
+from tiacore_lib.pydantic_models.role_permission_relation_models import (
+    RolePermissionRelationCreateSchema,
+    RolePermissionRelationEditSchema,
+    RolePermissionRelationListResponseSchema,
+    RolePermissionRelationResponseSchema,
+    RolePermissionRelationSchema,
+    role_permission_filter_params,
+)
+from tiacore_lib.utils.validate_helpers import validate_exists
 from tortoise.expressions import Q
 
 from app.database.models import (
@@ -12,15 +21,6 @@ from app.database.models import (
     RolePermissionRelation,
 )
 from app.handlers.auth import require_superadmin
-from app.pydantic_models.role_permission_relation_models import (
-    RolePermissionRelationCreateSchema,
-    RolePermissionRelationEditSchema,
-    RolePermissionRelationListResponseSchema,
-    RolePermissionRelationResponseSchema,
-    RolePermissionRelationSchema,
-    role_permission_filter_params,
-)
-from app.utils.validate_helpers import validate_exists
 
 role_relation_router = APIRouter()
 

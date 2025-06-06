@@ -2,11 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response, status
 from loguru import logger
-from tortoise.expressions import Q
-
-from app.database.models import Role, RolePermissionRelation
-from app.handlers.auth import get_current_user, require_superadmin
-from app.pydantic_models.roles_models import (
+from tiacore_lib.pydantic_models.roles_models import (
     RoleCreateManySchema,
     RoleCreateSchema,
     RoleEditSchema,
@@ -15,6 +11,10 @@ from app.pydantic_models.roles_models import (
     RoleResponseSchema,
     RoleSchema,
 )
+from tortoise.expressions import Q
+
+from app.database.models import Role, RolePermissionRelation
+from app.handlers.auth import get_current_user, require_superadmin
 
 role_router = APIRouter()
 

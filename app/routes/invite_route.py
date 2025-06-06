@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from loguru import logger
+from tiacore_lib.config import get_settings
+from tiacore_lib.pydantic_models.auth_models import (
+    InviteRequest,
+    RegisterRequest,
+    TokenResponse,
+)
+from tiacore_lib.utils.verification import send_email
 
-from app.config import get_settings
 from app.database.models import (
     Application,
     Company,
@@ -16,13 +22,7 @@ from app.handlers.auth import (
     get_current_user,
     verify_jwt_token,
 )
-from app.pydantic_models.auth_models import (
-    InviteRequest,
-    RegisterRequest,
-    TokenResponse,
-)
 from app.utils.permissions_get import get_company_permissions_for_user
-from app.utils.verification import send_email
 
 invite_router = APIRouter()
 

@@ -1,8 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-
-from app.config import ConfigName, _load_settings
+from tiacore_lib.config import ConfigName, _load_settings
 
 load_dotenv()
 

@@ -1,17 +1,17 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from loguru import logger
+from tiacore_lib.config import get_settings
+from tiacore_lib.pydantic_models.auth_models import (
+    RegisterRequest,
+    RegisterResponse,
+)
+from tiacore_lib.utils.verification import send_email
 
-from app.config import get_settings
 from app.database.models import User, create_user
 from app.handlers.auth import (
     generate_token,
     verify_jwt_token,
 )
-from app.pydantic_models.auth_models import (
-    RegisterRequest,
-    RegisterResponse,
-)
-from app.utils.verification import send_email
 
 register_router = APIRouter()
 

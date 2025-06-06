@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends
 from loguru import logger
-from tortoise.expressions import Q
-
-from app.database.models import LegalEntityType
-from app.handlers.auth import get_current_user
-from app.pydantic_models.entity_type_models import (
+from tiacore_lib.pydantic_models.entity_type_models import (
     FilterParams,
     LegalEntityTypeListResponse,
     LegalEntityTypeSchema,
 )
+from tortoise.expressions import Q
+
+from app.database.models import LegalEntityType
+from app.handlers.auth import get_current_user
 
 entity_types_router = APIRouter()
 

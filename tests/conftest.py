@@ -1,10 +1,10 @@
 import pytest
 from httpx import AsyncClient
 from loguru import logger
+from tiacore_lib.config import ConfigName, _load_settings
 from tortoise import Tortoise
 
 from app import create_app
-from app.config import ConfigName, _load_settings
 from app.database.models import Application, User, create_user
 from app.handlers.auth import create_access_token, create_refresh_token, login_handler
 from app.utils.db_helpers import drop_all_tables

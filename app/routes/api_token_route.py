@@ -2,15 +2,15 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 from loguru import logger
+from tiacore_lib.pydantic_models.api_tokens_models import (
+    ApiTokenCreateSchema,
+    ApiTokenResponseSchema,
+)
+from tiacore_lib.utils.validate_helpers import validate_exists
 
 from app.database.models import ApiToken, User, UserCompanyRelation
 from app.handlers.depends import require_permission_in_context
 from app.handlers.token import generate_token_pair  # функция хеширования
-from app.pydantic_models.api_tokens_models import (
-    ApiTokenCreateSchema,
-    ApiTokenResponseSchema,
-)
-from app.utils.validate_helpers import validate_exists
 
 token_router = APIRouter()
 

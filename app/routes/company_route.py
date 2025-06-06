@@ -2,12 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
 from loguru import logger
-from tortoise.expressions import Q
-
-from app.database.models import Company, Role, User, UserCompanyRelation
-from app.dependencies.permissions import with_exact_company_permission
-from app.handlers.auth import get_current_user
-from app.pydantic_models.company_models import (
+from tiacore_lib.pydantic_models.company_models import (
     CompanyCreateSchema,
     CompanyEditSchema,
     CompanyListResponseSchema,
@@ -15,6 +10,11 @@ from app.pydantic_models.company_models import (
     CompanySchema,
     company_filter_params,
 )
+from tortoise.expressions import Q
+
+from app.database.models import Company, Role, User, UserCompanyRelation
+from app.dependencies.permissions import with_exact_company_permission
+from app.handlers.auth import get_current_user
 
 company_router = APIRouter()
 

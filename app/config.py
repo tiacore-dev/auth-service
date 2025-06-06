@@ -1,35 +1,11 @@
-from enum import Enum
-from functools import lru_cache
-
-from dotenv import load_dotenv
-from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
-def select_env(config_name: str):
-    if config_name.lower() == "test":
-        load_dotenv(".env.test", override=True)
-    else:
-        load_dotenv(".env", override=True)
+from pydantic_settings import SettingsConfigDict
+from tiacore_lib.config import (
+    BaseConfig as SharedBaseConfig,
+    TestConfig as SharedTestConfig,
+)
 
 
-class ConfigName(str, Enum):
-    TEST = "Test"
-    SERVER = "Server"
-    DEV = "Development"
-    PRODUCTION = "Production"
-    DOCKER = "Docker"
-
-
-class BaseConfig(BaseSettings):
-    SECRET_KEY: str = "default_secret"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    JWT_EXPIRATION_HOURS: int = 2
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-
-    LOG_LEVEL: str = "DEBUG"
-    ALGORITHM: str = "HS256"
-
-    PORT: int = 5015
+class BaseConfig(SharedBaseConfig):
     ALLOW_ORIGINS: list[str] = []
     FRONT_ORIGIN: str | None = None
     BACK_ORIGIN: str | None = None
@@ -44,12 +20,9 @@ class BaseConfig(BaseSettings):
 
     LOGIN: str | None = None
     PASSWORD: str = " "
-    JWT_SECRET: str | None = None
 
     DOCKERHUB_USERNAME: str | None = None
     CONFIG_NAME: str = "DEVELOPMENT"
-
-    APP: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -62,7 +35,7 @@ class BaseConfig(BaseSettings):
         raise NotImplementedError("db_url not implemented in base config")
 
 
-class TestConfig(BaseSettings):
+class TestConfig(SharedTestConfig):
     TEST_DATABASE_URL: str = "sqlite://db.sqlite3"
     APP: str = "test_app"
     SECRET_KEY: str = "default_secret"
@@ -122,27 +95,3 @@ class ProdConfig(BaseConfig):
     @property
     def db_url(self) -> str:
         return self.DATABASE_URL
-
-
-def _load_settings(config_name: str):
-    match ConfigName(config_name):
-        case ConfigName.TEST:
-            return TestConfig()
-        case ConfigName.DEV:
-            return DevConfig()
-        case ConfigName.DOCKER:
-            return DockerConfig()
-        case ConfigName.PRODUCTION:
-            return ProdConfig()
-        case ConfigName.SERVER:
-            return ServerConfig()
-        case _:
-            raise ValueError(f"❌ Unknown config_name: {config_name}")
-
-
-@lru_cache
-def get_settings():
-    print("⚠️ get_settings() вызван напрямую (через Depends)")
-    raise RuntimeError(
-        "⚠️ get_settings() должен быть переопределён в dependency_overrides!"
-    )

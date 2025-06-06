@@ -1,8 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from jose import JWTError
 from loguru import logger
+from tiacore_lib.config import get_settings
+from tiacore_lib.pydantic_models.auth_models import (
+    LoginRequest,
+    MEResponse,
+    RefreshRequest,
+    TokenResponse,
+    UserCompanyRelationOut,
+)
 
-from app.config import get_settings
 from app.database.models import User, UserCompanyRelation
 from app.handlers.auth import (
     create_access_token,
@@ -10,13 +19,6 @@ from app.handlers.auth import (
     get_current_user,
     login_handler,
     verify_token,
-)
-from app.pydantic_models.auth_models import (
-    LoginRequest,
-    MEResponse,
-    RefreshRequest,
-    TokenResponse,
-    UserCompanyRelationOut,
 )
 from app.utils.permissions_get import get_company_permissions_for_user
 
@@ -76,12 +78,16 @@ async def refresh_access_token(data: RefreshRequest, settings=Depends(get_settin
 
 
 @auth_router.get("/me", response_model=MEResponse, summary="Обновление Access Token")
-async def give_user_data(token_data=Depends(get_current_user)):
+async def give_user_data(
+    application_id: str = Query(...), token_data=Depends(get_current_user)
+):
     user = await User.get_or_none(id=token_data["user_id"])
     if not user:
         raise HTTPException(status_code=400, detail="Invalid token data")
     relations = (
-        await UserCompanyRelation.filter(user=user).prefetch_related("company").all()
+        await UserCompanyRelation.filter(user=user, application_id=application_id)
+        .prefetch_related("company")
+        .all()
     )
     relation_list = [UserCompanyRelationOut.from_orm(r) for r in relations]
     company_list = [relation.company.id for relation in relations]
@@ -95,3 +101,8 @@ async def give_user_data(token_data=Depends(get_current_user)):
         companies=company_list,
         relations=relation_list,
     )
+
+
+@auth_router.post("/logout", summary="Логаут")
+async def logout(user_id: UUID):
+    logger.info(f"Пользователь {user_id} вышел из системы")

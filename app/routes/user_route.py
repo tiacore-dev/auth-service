@@ -3,6 +3,14 @@ from uuid import UUID
 import bcrypt
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
 from loguru import logger
+from tiacore_lib.pydantic_models.user_models import (
+    UserCreateSchema,
+    UserEditSchema,
+    UserListResponseSchema,
+    UserResponseSchema,
+    UserSchema,
+    user_filter_params,
+)
 from tortoise.expressions import Q
 
 from app.database.models import Company, Role, User, UserCompanyRelation, create_user
@@ -11,14 +19,6 @@ from app.handlers.auth import require_superadmin
 from app.handlers.depends import (
     require_permission_in_context,
     require_permission_or_self_view,
-)
-from app.pydantic_models.user_models import (
-    UserCreateSchema,
-    UserEditSchema,
-    UserListResponseSchema,
-    UserResponseSchema,
-    UserSchema,
-    user_filter_params,
 )
 
 user_router = APIRouter()

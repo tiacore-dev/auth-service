@@ -2,15 +2,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from loguru import logger
-from tortoise.expressions import Q
-
-from app.database.models import Restriction
-from app.handlers.auth import get_current_user
-from app.pydantic_models.restrictions_models import (
+from tiacore_lib.pydantic_models.restrictions_models import (
     RestrictionsListResponseSchema,
     RestrictionsSchema,
     restriction_filter_params,
 )
+from tortoise.expressions import Q
+
+from app.database.models import Restriction
+from app.handlers.auth import get_current_user
 
 restrictions_router = APIRouter()
 

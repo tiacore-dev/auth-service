@@ -2,6 +2,15 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
+from tiacore_lib.pydantic_models.entity_company_relation_models import (
+    EntityCompanyRelationCreateSchema,
+    EntityCompanyRelationEditSchema,
+    EntityCompanyRelationListResponseSchema,
+    EntityCompanyRelationResponseSchema,
+    EntityCompanyRelationSchema,
+    entity_company_filter_params,
+)
+from tiacore_lib.utils.validate_helpers import validate_exists
 from tortoise.expressions import Q
 
 from app.database.models import (
@@ -12,15 +21,6 @@ from app.database.models import (
 )
 from app.dependencies.permissions import with_permission_and_legal_entity_company_check
 from app.handlers.depends import require_permission_in_context
-from app.pydantic_models.entity_company_relation_models import (
-    EntityCompanyRelationCreateSchema,
-    EntityCompanyRelationEditSchema,
-    EntityCompanyRelationListResponseSchema,
-    EntityCompanyRelationResponseSchema,
-    EntityCompanyRelationSchema,
-    entity_company_filter_params,
-)
-from app.utils.validate_helpers import validate_exists
 
 entity_relation_router = APIRouter()
 

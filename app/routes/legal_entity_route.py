@@ -3,6 +3,19 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from loguru import logger
+from tiacore_lib.pydantic_models.legal_entity_models import (
+    LegalEntityCreateSchema,
+    LegalEntityEditSchema,
+    LegalEntityINNCreateSchema,
+    LegalEntityListResponseSchema,
+    LegalEntityResponseSchema,
+    LegalEntitySchema,
+    LegalEntityShortSchema,
+    inn_kpp_filter_params,
+    legal_entity_filter_params,
+)
+from tiacore_lib.utils.helpers import format_address
+from tiacore_lib.utils.validate_helpers import validate_exists
 from tortoise.expressions import Q
 
 from app.database.models import (
@@ -15,21 +28,8 @@ from app.database.models import (
 from app.dependencies.permissions import with_permission_and_entity_company_check
 from app.handlers.auth import get_current_user
 from app.handlers.depends import require_permission_in_context
-from app.pydantic_models.legal_entity_models import (
-    LegalEntityCreateSchema,
-    LegalEntityEditSchema,
-    LegalEntityINNCreateSchema,
-    LegalEntityListResponseSchema,
-    LegalEntityResponseSchema,
-    LegalEntitySchema,
-    LegalEntityShortSchema,
-    inn_kpp_filter_params,
-    legal_entity_filter_params,
-)
 from app.utils.db_helpers import get_entities_by_query
 from app.utils.entity_data_get import fetch_egrul_data
-from app.utils.helpers import format_address
-from app.utils.validate_helpers import validate_exists
 
 entity_router = APIRouter()
 

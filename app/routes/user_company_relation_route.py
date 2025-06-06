@@ -1,12 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from tortoise.expressions import Q
-
-from app.database.models import Company, Role, User, UserCompanyRelation
-from app.dependencies.permissions import with_permission_and_user_company_check
-from app.handlers.depends import require_permission_in_context
-from app.pydantic_models.user_company_relation_models import (
+from tiacore_lib.pydantic_models.user_company_relation_models import (
     UserCompanyRelationCreateSchema,
     UserCompanyRelationEditSchema,
     UserCompanyRelationFilterSchema,
@@ -14,7 +9,12 @@ from app.pydantic_models.user_company_relation_models import (
     UserCompanyRelationResponseSchema,
     UserCompanyRelationSchema,
 )
-from app.utils.validate_helpers import validate_exists
+from tiacore_lib.utils.validate_helpers import validate_exists
+from tortoise.expressions import Q
+
+from app.database.models import Company, Role, User, UserCompanyRelation
+from app.dependencies.permissions import with_permission_and_user_company_check
+from app.handlers.depends import require_permission_in_context
 
 relation_router = APIRouter()
 

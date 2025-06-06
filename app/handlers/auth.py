@@ -4,9 +4,9 @@ from fastapi import Depends, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 from loguru import logger
+from tiacore_lib.config import get_settings
 
 from app.auth_schemas import bearer_scheme
-from app.config import get_settings
 from app.database.models import User
 from app.utils.permissions_get import get_company_permissions_for_user
 

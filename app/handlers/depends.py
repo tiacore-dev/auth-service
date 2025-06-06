@@ -3,11 +3,11 @@ from uuid import UUID
 
 from fastapi import Depends, HTTPException, Path, Query
 from loguru import logger
+from tiacore_lib.config import get_settings
+from tiacore_lib.pydantic_models.auth_models import RolePermissionBlock
 
-from app.config import get_settings
 from app.database.models import UserCompanyRelation
 from app.handlers.auth import get_current_user
-from app.pydantic_models.auth_models import RolePermissionBlock
 
 
 async def get_current_context(
