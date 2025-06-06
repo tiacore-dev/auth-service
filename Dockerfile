@@ -4,14 +4,17 @@ WORKDIR /app
 
 
 ARG GITHUB_TOKEN
-ENV GITHUB_TOKEN=${GITHUB_TOKEN}
+RUN --mount=type=secret,id=github_token \
+  GITHUB_TOKEN=$(cat /run/secrets/github_token) \
+  pip install --no-cache-dir \
+  git+https://${GITHUB_TOKEN}@github.com/tiacore-dev/tiacore-lib.git@master
 
 
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
 
 COPY requirements.txt ./
-RUN sed -i "s|\${GITHUB_TOKEN}|${GITHUB_TOKEN}|g" requirements.txt
+
 
 
 RUN pip install --no-cache-dir -r requirements.txt

@@ -1,6 +1,7 @@
 from pydantic_settings import SettingsConfigDict
 from tiacore_lib.config import (
     BaseConfig as SharedBaseConfig,
+    ConfigName,
     TestConfig as SharedTestConfig,
 )
 
@@ -95,3 +96,19 @@ class ProdConfig(BaseConfig):
     @property
     def db_url(self) -> str:
         return self.DATABASE_URL
+
+
+def _load_settings(config_name: str):
+    match ConfigName(config_name):
+        case ConfigName.TEST:
+            return TestConfig()
+        case ConfigName.DEV:
+            return DevConfig()
+        case ConfigName.DOCKER:
+            return DockerConfig()
+        case ConfigName.PRODUCTION:
+            return ProdConfig()
+        case ConfigName.SERVER:
+            return ServerConfig()
+        case _:
+            raise ValueError(f"❌ Unknown config_name: {config_name}")
