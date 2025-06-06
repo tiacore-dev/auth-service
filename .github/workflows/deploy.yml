@@ -76,7 +76,7 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-service:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-service:buildcache,mode=max
           secrets: |
-            github_token=${{ secrets.GITHUB_TOKEN }}
+            github_token=${{ secrets.TOKEN_SHARED_LIB }}
 
 
 
