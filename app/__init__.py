@@ -29,13 +29,9 @@ def create_app(config_name: ConfigName) -> FastAPI:
         if type(settings) is not TestConfig:
             from app.database.config import TORTOISE_ORM
 
-            # ✅ Используем твой конфиг напрямую
             await Tortoise.init(config=TORTOISE_ORM)
-            # 💥 ДОБАВЬ ЭТО
-            Tortoise.init_models(["app.database.models"], "models")
-            await Tortoise.generate_schemas() if config_name == "Test" else None
 
-            # ✅ ORM готова, можно работать с БД
+            Tortoise.init_models(["app.database.models"], "models")
 
             await add_initial_permissions()
             await create_admin_user(settings)

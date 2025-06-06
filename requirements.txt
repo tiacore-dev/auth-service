@@ -7,16 +7,19 @@ loguru==0.7.3
 
 # ORM, миграции и работа с базой
 tortoise-orm==0.25.0
-aerich==0.2.4
+aerich==0.7.2
 asyncpg==0.30.0
 
 # Запуск приложения
 uvicorn==0.34.2
 gunicorn==23.0.0
 
-# Dfkblfwbz
+# Pydantic
 pydantic==2.10.6
 pydantic-settings==2.9.1
+
+# Rabbit
+aio-pika==9.5.5
 
 # Utils
 python-dotenv==1.0.1

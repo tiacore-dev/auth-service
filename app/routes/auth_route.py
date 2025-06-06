@@ -3,14 +3,21 @@ from jose import JWTError
 from loguru import logger
 
 from app.config import get_settings
-from app.database.models import User
+from app.database.models import User, UserCompanyRelation
 from app.handlers.auth import (
     create_access_token,
     create_refresh_token,
+    get_current_user,
     login_handler,
     verify_token,
 )
-from app.pydantic_models.auth_models import LoginRequest, RefreshRequest, TokenResponse
+from app.pydantic_models.auth_models import (
+    LoginRequest,
+    MEResponse,
+    RefreshRequest,
+    TokenResponse,
+    UserCompanyRelationOut,
+)
 from app.utils.permissions_get import get_company_permissions_for_user
 
 auth_router = APIRouter()
@@ -66,3 +73,25 @@ async def refresh_access_token(data: RefreshRequest, settings=Depends(get_settin
         raise HTTPException(
             status_code=401, detail="Неверный или просроченный токен"
         ) from exc
+
+
+@auth_router.get("/me", response_model=MEResponse, summary="Обновление Access Token")
+async def give_user_data(token_data=Depends(get_current_user)):
+    user = await User.get_or_none(id=token_data["user_id"])
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid token data")
+    relations = (
+        await UserCompanyRelation.filter(user=user).prefetch_related("company").all()
+    )
+    relation_list = [UserCompanyRelationOut.from_orm(r) for r in relations]
+    company_list = [relation.company.id for relation in relations]
+    permissions = await get_company_permissions_for_user(user)
+
+    return MEResponse(
+        user_id=user.id,
+        is_superadmin=user.is_superadmin,
+        email=user.email,
+        permissions=permissions,
+        companies=company_list,
+        relations=relation_list,
+    )

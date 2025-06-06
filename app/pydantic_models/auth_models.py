@@ -1,6 +1,9 @@
 from typing import Dict, List, Optional
+from uuid import UUID
 
-from pydantic import UUID4, BaseModel, model_validator
+from pydantic import BaseModel, model_validator
+
+from app.database.models import UserCompanyRelation
 
 
 class RolePermissionBlock(BaseModel):
@@ -13,7 +16,7 @@ class TokenResponse(BaseModel):
     refresh_token: str
     permissions: Optional[Dict[str, Dict[str, List[dict]]]] = None
     is_superadmin: bool
-    user_id: UUID4
+    user_id: UUID
 
     @model_validator(mode="after")
     def check_permissions_for_non_superadmin(self) -> "TokenResponse":
@@ -25,6 +28,30 @@ class TokenResponse(BaseModel):
                         "permissions must be provided if user is not a superadmin"
                     )
         return self
+
+
+class UserCompanyRelationOut(BaseModel):
+    id: UUID
+    company_id: UUID
+    role: str
+
+    @classmethod
+    def from_orm(cls, relation: UserCompanyRelation):
+        return cls(
+            id=relation.id, company_id=relation.company.id, role=relation.role.name
+        )
+
+    class Config:
+        orm_mode = True
+
+
+class MEResponse(BaseModel):
+    user_id: UUID
+    is_superadmin: bool
+    email: str
+    permissions: Optional[Dict[str, Dict[str, List[dict]]]] = None
+    companies: List[UUID]
+    relations: List[UserCompanyRelationOut]
 
 
 class LoginRequest(BaseModel):
@@ -44,11 +71,11 @@ class RefreshRequest(BaseModel):
 
 
 class RegisterResponse(BaseModel):
-    user_id: UUID4
+    user_id: UUID
 
 
 class InviteRequest(BaseModel):
     email: str
-    company_id: UUID4
-    role_id: UUID4
+    company_id: UUID
+    role_id: UUID
     application_id: str
