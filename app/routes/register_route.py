@@ -21,6 +21,11 @@ async def register(
     data: RegisterRequest,
     settings=Depends(get_settings),
 ):
+    user_exists = await User.exists(email=data.email)
+    if user_exists:
+        raise HTTPException(
+            status_code=400, detail=f"User with email {data.email} already exists"
+        )
     user = await create_user(
         email=data.email,
         password=data.password,
