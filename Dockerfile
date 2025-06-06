@@ -5,15 +5,10 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
 
-ARG LIB_TOKEN
 RUN --mount=type=secret,id=lib_repo_token \
   sh -c 'pip install git+https://$(cat /run/secrets/lib_repo_token)@github.com/tiacore-dev/tiacore-lib.git@master'
 
-
-
-
 COPY requirements.txt ./
-
 
 
 RUN pip install --no-cache-dir -r requirements.txt
