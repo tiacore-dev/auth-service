@@ -5,8 +5,13 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
 
-RUN --mount=type=secret,id=lib_repo_token \
-    bash -c "pip install git+https://x-access-token:$(< /run/secrets/lib_repo_token)@github.com/tiacore-dev/tiacore-lib.git@master"
+# Указываем переменную
+ARG LIB_REPO_TOKEN
+
+# Чтобы ARG была доступна на этом слое
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install git+https://x-access-token:${LIB_REPO_TOKEN}@github.com/tiacore-dev/tiacore-lib.git@master
+
 
 COPY requirements.txt ./
 

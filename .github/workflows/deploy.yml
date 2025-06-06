@@ -45,7 +45,7 @@ jobs:
         run: |
           docker buildx build \
             --target test \
-            --secret id=lib_repo_token,env=TOKEN_SHARED_LIB \
+            --build-arg LIB_REPO_TOKEN=${{ secrets.TOKEN_SHARED_LIB }} \
             --cache-from=type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-service:buildcache \
             --cache-to=type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-service:buildcache,mode=max \
             --load \
@@ -73,10 +73,12 @@ jobs:
           push: true
           target: prod
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:${{ github.sha }}
+          build-args: |
+            LIB_REPO_TOKEN=${{ secrets.TOKEN_SHARED_LIB }}
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-service:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-service:buildcache,mode=max
-          secrets: |
-            lib_repo_token=${{ secrets.TOKEN_SHARED_LIB }}
+
+
 
 
 
