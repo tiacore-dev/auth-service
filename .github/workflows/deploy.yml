@@ -45,7 +45,7 @@ jobs:
         run: |
           docker buildx build \
             --target test \
-            --build-arg GITHUB_TOKEN=${{ secrets.TOKEN_SHARED_LIB }} \
+            --build-arg LIB_TOKEN=${{ secrets.TOKEN_SHARED_LIB }} \
             --cache-from=type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-service:buildcache \
             --cache-to=type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-service:buildcache,mode=max \
             --load \
@@ -76,7 +76,7 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-service:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/auth-service:buildcache,mode=max
           secrets: |
-            GITHUB_TOKEN=${{ secrets.TOKEN_SHARED_LIB }}
+            lib_repo_token=${{ secrets.TOKEN_SHARED_LIB }}
 
 
 
