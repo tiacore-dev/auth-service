@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Request, status
 from loguru import logger
 from tiacore_lib.pydantic_models.company_models import (
     CompanyCreateSchema,
@@ -10,11 +10,13 @@ from tiacore_lib.pydantic_models.company_models import (
     CompanySchema,
     company_filter_params,
 )
+from tiacore_lib.rabbit.models import EventType
 from tortoise.expressions import Q
 
 from app.database.models import Company, Role, User, UserCompanyRelation
 from app.dependencies.permissions import with_exact_company_permission
 from app.handlers.auth import get_current_user
+from app.utils.event_builder import build_user_event
 
 company_router = APIRouter()
 
@@ -26,7 +28,9 @@ company_router = APIRouter()
     status_code=status.HTTP_201_CREATED,
 )
 async def add_company(
-    data: CompanyCreateSchema = Body(), user_data: dict = Depends(get_current_user)
+    request: Request,
+    data: CompanyCreateSchema = Body(),
+    user_data: dict = Depends(get_current_user),
 ):
     logger.info(f"Создание компании: {data.model_dump()}")
     try:
@@ -40,7 +44,8 @@ async def add_company(
         user = await User.get_or_none(email=user_data["email"])
         if role and user:
             await UserCompanyRelation.create(role=role, company=company, user=user)
-
+            event = await build_user_event(user, event_type=EventType.USER_UPDATED)
+            await request.app.state.publisher.publish_event(event)
         return {"company_id": str(company.id)}
 
     except (KeyError, TypeError, ValueError) as e:
