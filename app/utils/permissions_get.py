@@ -23,7 +23,6 @@ async def get_company_permissions_for_user(
         role_id__in=role_ids
     ).select_related("permission", "role", "application")
 
-    # (role_id, app_id) → List[permission_name]
     role_app_map = defaultdict(lambda: defaultdict(list))
     for rp in role_permissions:
         role_app_map[str(rp.role.id)][str(rp.application.id)].append(rp.permission.id)
