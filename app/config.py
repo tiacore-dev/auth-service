@@ -25,6 +25,8 @@ class BaseConfig(SharedBaseConfig):
     DOCKERHUB_USERNAME: str | None = None
     CONFIG_NAME: str = "DEVELOPMENT"
 
+    AUTH_BROKER_URL: str = ""
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -50,7 +52,7 @@ class TestConfig(SharedTestConfig):
     SMTP_PASSWORD: str | None = None
     FRONT_ORIGIN: str | None = None
     BACK_ORIGIN: str | None = None
-
+    AUTH_BROKER_URL: str = ""
     model_config = SettingsConfigDict(
         env_file=".env.test",
         env_file_encoding="utf-8",

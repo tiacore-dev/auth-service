@@ -69,6 +69,12 @@ async def add_legal_entity(
         raise HTTPException(
             status_code=400, detail=f"Юрлицо с ИНН {data.inn} уже существует"
         )
+    if data.ogrn:
+        existing_entity = await LegalEntity.exists(ogrn=data.ogrn)
+        if existing_entity:
+            raise HTTPException(
+                status_code=400, detail=f"Юрлицо с ОГРН {data.ogrn} уже существует"
+            )
 
     entity = await LegalEntity.create(
         short_name=data.short_name,

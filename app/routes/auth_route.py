@@ -1,6 +1,5 @@
-from uuid import UUID
-
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import JSONResponse
 from jose import JWTError
 from loguru import logger
 from tiacore_lib.config import get_settings
@@ -11,6 +10,7 @@ from tiacore_lib.pydantic_models.auth_models import (
     TokenResponse,
     UserCompanyRelationOut,
 )
+from tiacore_lib.rabbit.models import EventType, UserEvent
 
 from app.database.models import User, UserCompanyRelation
 from app.handlers.auth import (
@@ -20,6 +20,7 @@ from app.handlers.auth import (
     login_handler,
     verify_token,
 )
+from app.utils.event_builder import build_user_event
 from app.utils.permissions_get import (
     get_company_permissions_by_application,
     get_company_permissions_for_user,
@@ -29,20 +30,26 @@ auth_router = APIRouter()
 
 
 @auth_router.post("/login", response_model=TokenResponse)
-async def login(data: LoginRequest, settings=Depends(get_settings)):
+async def login(data: LoginRequest, request: Request, settings=Depends(get_settings)):
     result = await login_handler(data.email, data.password)
     if not result:
         raise HTTPException(status_code=401, detail="Неверные учетные данные")
+    try:
+        user, company_permissions = result
+        logger.debug(f"Полученные разрешения: {company_permissions}")
+        event = await build_user_event(user, event_type=EventType.USER_LOGGED_IN)
+        await request.app.state.publisher.publish_event(event)
 
-    user, company_permissions = result
-    logger.debug(f"Полученные разрешения: {company_permissions}")
-    return TokenResponse(
-        access_token=create_access_token({"sub": user.email}, settings),
-        refresh_token=create_refresh_token({"sub": user.email}, settings),
-        permissions=None if user.is_superadmin else company_permissions,
-        is_superadmin=user.is_superadmin,
-        user_id=user.id,
-    )
+        return TokenResponse(
+            access_token=create_access_token({"sub": user.email}, settings),
+            refresh_token=create_refresh_token({"sub": user.email}, settings),
+            permissions=None if user.is_superadmin else company_permissions,
+            is_superadmin=user.is_superadmin,
+            user_id=user.id,
+        )
+    except Exception as e:
+        logger.exception("🔥 Ошибка при авторизации")
+        return JSONResponse(status_code=500, content={"detail": str(e)})
 
 
 @auth_router.post(
@@ -80,7 +87,9 @@ async def refresh_access_token(data: RefreshRequest, settings=Depends(get_settin
         ) from exc
 
 
-@auth_router.get("/me", response_model=MEResponse, summary="Обновление Access Token")
+@auth_router.get(
+    "/me", response_model=MEResponse, summary="Получение инфы о пользователе"
+)
 async def give_user_data(
     application_id: str = Query(...), token_data=Depends(get_current_user)
 ):
@@ -90,7 +99,7 @@ async def give_user_data(
     relations = (
         await UserCompanyRelation.filter(user=user).prefetch_related("company").all()
     )
-    relation_list = [UserCompanyRelationOut.from_orm(r) for r in relations]
+    relation_list = [UserCompanyRelationOut.model_validate(r) for r in relations]
     company_list = [relation.company.id for relation in relations]
     permissions = await get_company_permissions_by_application(user, application_id)
 
@@ -105,5 +114,13 @@ async def give_user_data(
 
 
 @auth_router.post("/logout", summary="Логаут")
-async def logout(user_id: UUID):
-    logger.info(f"Пользователь {user_id} вышел из системы")
+async def logout(
+    request: Request,
+    token_data=Depends(get_current_user),
+):
+    logger.info(f"Пользователь {token_data['email']} вышел из системы")
+    event = UserEvent(
+        event=EventType.USER_LOGGED_OUT,
+        email=token_data["email"],
+    )
+    await request.app.state.publisher.publish_event(event)

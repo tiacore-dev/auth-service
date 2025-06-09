@@ -53,7 +53,11 @@ async def add_many_roles(
         role = await Role.create(name=data.name)
         await RolePermissionRelation.bulk_create(
             [
-                RolePermissionRelation(role_id=role.id, permission_id=permission_id)
+                RolePermissionRelation(
+                    role_id=role.id,
+                    permission_id=permission_id,
+                    application_id=data.application_id,
+                )
                 for permission_id in data.permissions
             ]
         )

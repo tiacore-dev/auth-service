@@ -19,6 +19,8 @@ services:
     tty: true
     stdin_open: true
     restart: always
+    depends_on:
+      - rabbitmq
     ports:
       - "${PORT}:8000"
     volumes:

@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import make_asgi_app
 from tiacore_lib.config import ConfigName, get_settings
+from tiacore_lib.rabbit.publisher import EventPublisher
 from tortoise import Tortoise
 
 from app.config import TestConfig, _load_settings
@@ -38,6 +39,9 @@ def create_app(config_name: ConfigName) -> FastAPI:
             await create_admin_user(settings)
             await create_test_data()
 
+            # 🔥 Init publisher
+            app.state.publisher = EventPublisher(settings.AUTH_BROKER_URL)
+            await app.state.publisher.connect()
         yield
 
         await Tortoise.close_connections()
