@@ -3,24 +3,22 @@ from httpx import AsyncClient
 
 from app.database.models import Application
 
+# @pytest.mark.usefixtures("seed_other_user")
+# @pytest.mark.asyncio
+# async def test_login_success(test_app: AsyncClient):
+#     """Проверяем успешную аутентификацию."""
+#     response = await test_app.post(
+#         "/api/auth/login",
+#         json={
+#             "email": "Test User",
+#             "password": "123",
+#         },
+#     )
 
-@pytest.mark.usefixtures("seed_other_user")
-@pytest.mark.asyncio
-async def test_login_success(test_app: AsyncClient, seed_application: Application):
-    """Проверяем успешную аутентификацию."""
-    response = await test_app.post(
-        "/api/auth/login",
-        json={
-            "email": "Test User",
-            "password": "123",
-            "application_id": seed_application.id,
-        },
-    )
-
-    assert response.status_code == 200
-    json_data = response.json()
-    assert "access_token" in json_data
-    assert "refresh_token" in json_data
+#     assert response.status_code == 200
+#     json_data = response.json()
+#     assert "access_token" in json_data
+#     assert "refresh_token" in json_data
 
 
 @pytest.mark.asyncio

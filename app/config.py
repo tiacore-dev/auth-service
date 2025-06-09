@@ -1,8 +1,7 @@
-from pydantic_settings import SettingsConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from tiacore_lib.config import (
     BaseConfig as SharedBaseConfig,
     ConfigName,
-    TestConfig as SharedTestConfig,
 )
 
 
@@ -38,7 +37,19 @@ class BaseConfig(SharedBaseConfig):
         raise NotImplementedError("db_url not implemented in base config")
 
 
-class TestConfig(SharedTestConfig):
+class TestConfig(BaseSettings):
+    SECRET_KEY: str = "secret_key"
+    JWT_SECRET: str = "super_secret_kye"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    JWT_EXPIRATION_HOURS: int = 2
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    ALGORITHM: str = "HS256"
+
+    AUTH_URL: str = "http://test"
+
+    BROKER_URL: str = ""
+    BROKER_DATA: str = ""
+
     TEST_DATABASE_URL: str = "sqlite://db.sqlite3"
     APP: str = "test_app"
     SECRET_KEY: str = "default_secret"
