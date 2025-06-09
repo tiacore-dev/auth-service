@@ -18,7 +18,7 @@ async def build_user_event(user: User, event_type: EventType) -> UserEvent:
             {
                 "id": r.id,
                 "company_id": r.company.id,
-                "role_id": r.role.id if hasattr(r, "role") else None,
+                "role_id": r.role.name if hasattr(r, "role") else None,
             }
         )
         for r in relations
