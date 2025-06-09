@@ -22,7 +22,7 @@ async def build_user_event(user: User, event_type: EventType) -> UserEvent:
         for r in relations
     ]
 
-    company_list = [r.company.id for r in relations]
+    company_list = [str(r.company.id) for r in relations]
     permissions = await get_company_permissions_for_user(user)
 
     return UserEvent(
