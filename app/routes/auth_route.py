@@ -20,7 +20,10 @@ from app.handlers.auth import (
     login_handler,
     verify_token,
 )
-from app.utils.permissions_get import get_company_permissions_for_user
+from app.utils.permissions_get import (
+    get_company_permissions_by_application,
+    get_company_permissions_for_user,
+)
 
 auth_router = APIRouter()
 
@@ -85,13 +88,11 @@ async def give_user_data(
     if not user:
         raise HTTPException(status_code=400, detail="Invalid token data")
     relations = (
-        await UserCompanyRelation.filter(user=user, application_id=application_id)
-        .prefetch_related("company")
-        .all()
+        await UserCompanyRelation.filter(user=user).prefetch_related("company").all()
     )
     relation_list = [UserCompanyRelationOut.from_orm(r) for r in relations]
     company_list = [relation.company.id for relation in relations]
-    permissions = await get_company_permissions_for_user(user)
+    permissions = await get_company_permissions_by_application(user, application_id)
 
     return MEResponse(
         user_id=user.id,
