@@ -15,8 +15,8 @@ async def build_user_event(user: User, event_type: EventType) -> UserEvent:
     )
     relation_list = [
         UserCompanyRelationOut(
-            id=r.id,
-            company_id=r.company.id,
+            id=str(r.id),
+            company_id=str(r.company.id),
             role=r.role.name,
         )
         for r in relations
