@@ -14,12 +14,10 @@ async def build_user_event(user: User, event_type: EventType) -> UserEvent:
         .all()
     )
     relation_list = [
-        UserCompanyRelationOut.model_validate(
-            {
-                "id": r.id,
-                "company_id": r.company.id,
-                "role_id": r.role.name if hasattr(r, "role") else None,
-            }
+        UserCompanyRelationOut(
+            id=r.id,
+            company_id=r.company.id,
+            role=r.role.name,
         )
         for r in relations
     ]
