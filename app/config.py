@@ -51,7 +51,7 @@ class TestConfig(BaseSettings):
     BROKER_DATA: str = ""
 
     TEST_DATABASE_URL: str = "sqlite://db.sqlite3"
-    APP: str = "test_app"
+    APP: str = "auth_app"
     SECRET_KEY: str = "default_secret"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     JWT_EXPIRATION_HOURS: int = 2
