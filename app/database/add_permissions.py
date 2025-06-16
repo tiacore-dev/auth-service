@@ -125,6 +125,18 @@ permissions = [
     ("delete_prompt", "Удаление промпта"),
     ("view_prompt", "Просмотр промпта"),
     ("get_all_prompts", "Просмотр всех промптов"),
+    # Storages
+    ("add_storage", "Добавление склада"),
+    ("edit_storage", "Редактирование склада"),
+    ("delete_storage", "Удаление склада"),
+    ("view_storage", "Просмотр склада"),
+    ("get_all_storages", "Просмотр всех складов"),
+    # Cash Registers
+    ("add_cash_register", "Добавление кассы"),
+    ("edit_cash_register", "Редактирование кассы"),
+    ("delete_cash_register", "Удаление кассы"),
+    ("view_cash_register", "Просмотр кассы"),
+    ("get_all_cash_registers", "Просмотр всех касс"),
 ]
 
 

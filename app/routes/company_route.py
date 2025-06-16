@@ -40,12 +40,18 @@ async def add_company(
             raise HTTPException(status_code=500, detail="Не удалось создать компанию")
 
         logger.success(f"Компания создана: {company.id}")
-        role = await Role.get_or_none(system_name="admin")
         user = await User.get_or_none(email=user_data["email"])
-        if role and user:
+        if not user:
+            raise HTTPException(status_code=400, detail="Пользователь не найден")
+        if user.is_superadmin:
+            return {"company_id": str(company.id)}
+
+        role = await Role.get_or_none(system_name="admin")
+        if role:
             await UserCompanyRelation.create(role=role, company=company, user=user)
             event = await build_user_event(user, event_type=EventType.USER_UPDATED)
             await request.app.state.publisher.publish_event(event)
+
         return {"company_id": str(company.id)}
 
     except (KeyError, TypeError, ValueError) as e:
@@ -120,7 +126,6 @@ async def get_companies(
             raise HTTPException(status_code=500, detail="Пользователь не найден в базе")
 
         if not user.is_superadmin:
-            # 🔍 Получаем список компаний, к которым у пользователя есть доступ
             related_company_ids = await UserCompanyRelation.filter(
                 user=user
             ).values_list("company__company_id", flat=True)

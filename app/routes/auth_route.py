@@ -99,7 +99,13 @@ async def give_user_data(
     relations = (
         await UserCompanyRelation.filter(user=user).prefetch_related("company").all()
     )
-    relation_list = [UserCompanyRelationOut.model_validate(r) for r in relations]
+    relation_list = [
+        UserCompanyRelationOut(
+            id=str(r.id), company_id=str(r.company.id), role=r.role.name
+        )
+        for r in relations
+    ]
+
     company_list = [relation.company.id for relation in relations]
     permissions = await get_company_permissions_by_application(user, application_id)
 
