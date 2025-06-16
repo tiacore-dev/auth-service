@@ -39,6 +39,7 @@ async def create_test_data():
         await Application.get_or_create(id="observer_app", name="Observer service")
         await Application.get_or_create(id="auth_app", name="Сервис аутентификации")
         await Application.get_or_create(id="reference_app", name="Сервис справочников")
+        await Application.get_or_create(id="contract_app", name="Сервис договоров")
         await Company.get_or_create(name="Tiacore")
         await Role.get_or_create(name="Администратор", system_name="admin")
         await Role.get_or_create(name="Пользователь", system_name="user")

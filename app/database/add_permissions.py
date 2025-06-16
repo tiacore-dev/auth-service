@@ -137,6 +137,20 @@ permissions = [
     ("delete_cash_register", "Удаление кассы"),
     ("view_cash_register", "Просмотр кассы"),
     ("get_all_cash_registers", "Просмотр всех касс"),
+    # Cities
+    ("add_city", "Добавление города"),
+    ("edit_city", "Редактирование города"),
+    ("delete_city", "Удаление города"),
+    ("view_city", "Просмотр города"),
+    ("get_all_cities", "Просмотр всех городов"),
+    # Contract files
+    ("add_contract_file", "Добавление файла контракта"),
+    ("edit_contract_file", "Редактирование файла контракта"),
+    ("delete_contract_file", "Удаление файла контракта"),
+    ("view_contract_file", "Просмотр файла контракта"),
+    ("get_all_contract_files", "Просмотр всех файлов контрактов"),
+    # Contract Types
+    ("get_all_contract_types", "Просмотр всех типов контрактов"),
 ]
 
 
