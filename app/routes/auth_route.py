@@ -97,7 +97,9 @@ async def give_user_data(
     if not user:
         raise HTTPException(status_code=400, detail="Invalid token data")
     relations = (
-        await UserCompanyRelation.filter(user=user).prefetch_related("company").all()
+        await UserCompanyRelation.filter(user=user)
+        .prefetch_related("company", "role")
+        .all()
     )
     relation_list = [
         UserCompanyRelationOut(
