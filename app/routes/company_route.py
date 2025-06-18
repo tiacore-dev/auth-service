@@ -14,7 +14,6 @@ from tiacore_lib.rabbit.models import EventType
 from tortoise.expressions import Q
 
 from app.database.models import Company, Role, User, UserCompanyRelation
-from app.dependencies.permissions import with_exact_company_permission
 from app.handlers.auth import get_current_user
 from app.utils.event_builder import build_user_event
 
@@ -68,7 +67,7 @@ async def edit_company(
         ..., title="ID компании", description="ID изменяемой компании"
     ),
     data: CompanyEditSchema = Body(),
-    _=with_exact_company_permission("edit_company"),
+    _=Depends(get_current_user),
 ):
     logger.info(
         f"Обновление компании {company_id}: {data.model_dump(exclude_unset=True)}"
@@ -97,7 +96,7 @@ async def delete_company(
     company_id: UUID = Path(
         ..., title="ID компании", description="ID удаляемой компании"
     ),
-    _=with_exact_company_permission("delete_company"),
+    _=Depends(get_current_user),
 ):
     logger.info(f"Удаление компании: {company_id}")
 

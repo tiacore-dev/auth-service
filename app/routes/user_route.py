@@ -14,12 +14,7 @@ from tiacore_lib.pydantic_models.user_models import (
 from tortoise.expressions import Q
 
 from app.database.models import Company, Role, User, UserCompanyRelation, create_user
-from app.dependencies.permissions import with_permission_and_company_check
-from app.handlers.auth import require_superadmin
-from app.handlers.depends import (
-    require_permission_in_context,
-    require_permission_or_self_view,
-)
+from app.handlers.auth import get_current_user, require_superadmin
 
 user_router = APIRouter()
 
@@ -67,7 +62,7 @@ async def add_user(data: UserCreateSchema = Body(...), _=Depends(require_superad
 async def edit_user(
     user_id: UUID,
     data: UserEditSchema = Body(...),
-    context=with_permission_and_company_check("edit_user"),
+    context=Depends(get_current_user),
 ):
     logger.info(f"Обновление пользователя {user_id}: {data.email}")
 
@@ -97,9 +92,7 @@ async def edit_user(
     summary="Удаление пользователя",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-async def delete_user(
-    user_id: UUID, _=with_permission_and_company_check("delete_user")
-):
+async def delete_user(user_id: UUID, _=Depends(get_current_user)):
     logger.info(f"Удаление пользователя {user_id}")
     try:
         user = await User.filter(id=user_id).first()
@@ -122,7 +115,7 @@ async def delete_user(
 )
 async def get_users(
     filters: dict = Depends(user_filter_params),
-    context=Depends(require_permission_in_context("get_all_users")),
+    context=Depends(get_current_user),
 ):
     query = Q()
     search_value = filters.get("search")
@@ -191,7 +184,7 @@ async def get_user(
     user_id: UUID = Path(
         ..., title="ID пользователя", description="ID просматриваемого пользователя"
     ),
-    context: dict = Depends(require_permission_or_self_view("view_user")),
+    context: dict = Depends(get_current_user),
 ):
     logger.info(f"Получен запрос на просмотр пользователя: {user_id}")
 

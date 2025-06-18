@@ -1,45 +1,12 @@
-from typing import Dict, List
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, Path
-from loguru import logger
 
 from app.database.models import (
-    Permission,
-    User,
     UserCompanyRelation,
 )
 from app.handlers.auth import get_current_user
 from app.handlers.depends import require_permission_in_context
-
-
-async def get_company_permissions_for_user(user: User) -> Dict[str, List[str]]:
-    logger.debug(
-        f"""🧩 user: {user} | type: {type(user)} |
-          has is_superadmin: {hasattr(user, "is_superadmin")}"""
-    )
-
-    is_superadmin = getattr(user, "is_superadmin", False)
-    if is_superadmin:
-        logger.debug("👑 Пользователь супер админ — возвращаем универсальные права")
-        return {"*": ["*"]}
-
-    logger.debug("🔒 Пользователь не суперадмин — ищем права по компаниям")
-
-    relations = await UserCompanyRelation.filter(user_id=user.id).select_related(
-        "company", "role"
-    )
-
-    company_permissions = {}
-
-    for rel in relations:
-        perms = await Permission.filter(
-            role_permission_relations__role=rel.role
-        ).values_list("permission_id", flat=True)
-
-        company_permissions[str(rel.company.id)] = list(perms)
-
-    return company_permissions
 
 
 def with_permission_and_company_check(permission: str):
