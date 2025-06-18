@@ -1,7 +1,8 @@
+from typing import Optional
 from uuid import UUID
 
 import bcrypt
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, status
 from loguru import logger
 from tiacore_lib.pydantic_models.user_models import (
     UserCreateSchema,
@@ -184,7 +185,7 @@ async def get_user(
     user_id: UUID = Path(
         ..., title="ID пользователя", description="ID просматриваемого пользователя"
     ),
-    company_id: UUID = Path(...),
+    company_id: Optional[UUID] = Query(None),
     context: dict = Depends(get_current_user),
 ):
     logger.info(f"Получен запрос на просмотр пользователя: {user_id}")
@@ -195,8 +196,7 @@ async def get_user(
         raise HTTPException(status_code=404, detail="Пользователь не найден")
 
     # 🔐 Проверка доступа
-    if not context["is_superadmin"]:
-        # Получаем список user_id в рамках текущей компании
+    if not context["is_superadmin"] or not company_id:
         allowed_user_ids = await UserCompanyRelation.filter(
             company=company_id
         ).values_list("user_id", flat=True)
