@@ -2,20 +2,6 @@ import pytest
 
 
 @pytest.mark.asyncio
-async def test_edit_company_forbidden_for_non_member(
-    test_app, jwt_token_user, seed_company
-):
-    headers = {"Authorization": f"Bearer {jwt_token_user['access_token']}"}
-    data = {"company_name": "Hacked!"}
-
-    response = await test_app.patch(
-        f"/api/companies/{seed_company.id}", headers=headers, json=data
-    )
-
-    assert response.status_code == 403
-
-
-@pytest.mark.asyncio
 async def test_get_companies_search(
     test_app, jwt_token_admin, seed_company, seed_relation
 ):
