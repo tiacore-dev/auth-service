@@ -184,6 +184,7 @@ async def get_user(
     user_id: UUID = Path(
         ..., title="ID пользователя", description="ID просматриваемого пользователя"
     ),
+    company_id: UUID = Path(...),
     context: dict = Depends(get_current_user),
 ):
     logger.info(f"Получен запрос на просмотр пользователя: {user_id}")
@@ -197,7 +198,7 @@ async def get_user(
     if not context["is_superadmin"]:
         # Получаем список user_id в рамках текущей компании
         allowed_user_ids = await UserCompanyRelation.filter(
-            company=context["company_id"]
+            company=company_id
         ).values_list("user_id", flat=True)
 
         if user_id not in allowed_user_ids:
