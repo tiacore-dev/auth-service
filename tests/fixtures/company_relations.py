@@ -1,11 +1,6 @@
 import pytest
 
-from app.database.models import (
-    Company,
-    Role,
-    User,
-    UserCompanyRelation,
-)
+from app.database.models import Application, Company, Role, User, UserCompanyRelation
 
 
 @pytest.fixture(scope="function")
@@ -18,9 +13,16 @@ async def seed_company():
 
 @pytest.fixture(scope="function")
 @pytest.mark.asyncio
-async def seed_relation(seed_user: User, seed_company: Company, seed_role_admin: Role):
+async def seed_relation(
+    seed_user: User,
+    seed_company: Company,
+    seed_role_admin: Role,
+    seed_application: Application,
+):
     user = await User.get_or_none(id=seed_user.id)
     company = await Company.get_or_none(id=seed_company.id)
     role = await Role.get_or_none(id=seed_role_admin.id)
-    relation = await UserCompanyRelation.create(company=company, user=user, role=role)
+    relation = await UserCompanyRelation.create(
+        company=company, user=user, role=role, application=seed_application
+    )
     return relation

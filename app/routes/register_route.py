@@ -32,7 +32,9 @@ async def register(
         full_name=data.full_name,
         position=data.position,
     )
-    token = generate_token({"sub": str(user.id)}, settings)
+    token = generate_token(
+        {"sub": str(user.id), "application_id": data.application_id}, settings
+    )
     logger.info(f"Пользователь зарегистрирован: {user.email}, user_id={user.id}")
     verification_link = f"{settings.FRONT_ORIGIN}/login?token={token}"
     body = f"""
@@ -49,7 +51,9 @@ async def register(
 
 @register_router.post("/resend-verification")
 async def resend_verification(
-    email: str = Body(..., embed=True), settings=Depends(get_settings)
+    email: str = Body(..., embed=True),
+    application_id: str = Body(..., embed=True),
+    settings=Depends(get_settings),
 ):
     user = await User.get_or_none(email=email)
     if not user:
@@ -58,7 +62,9 @@ async def resend_verification(
     if user.is_verified:
         return {"message": "Почта уже подтверждена"}
 
-    token = generate_token({"sub": str(user.id)}, settings)
+    token = generate_token(
+        {"sub": str(user.id), "application_id": application_id}, settings
+    )
     verification_link = f"{settings.FRONT_ORIGIN}/login?token={token}"
     body = f"""
     Здравствуйте!

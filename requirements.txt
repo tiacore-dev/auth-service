@@ -6,9 +6,9 @@ python-jose==3.3.0
 loguru==0.7.3
 
 # ORM, миграции и работа с базой
-tortoise-orm==0.25.0
-aerich==0.7.2
+tortoise-orm==0.24.0
 asyncpg==0.30.0
+aerich==0.7.2
 
 # Запуск приложения
 uvicorn==0.34.2

@@ -69,6 +69,7 @@ class Role(Model):
     name = fields.CharField(max_length=50, unique=True)
     system_name = fields.CharField(max_length=50, null=True, unique=True)
     comment = fields.TextField(null=True)
+    application_id = fields.CharField(max_length=100)
 
     def __repr__(self):
         return f"<Role(role_id={self.id}, role_name='{self.name}')>"
@@ -95,12 +96,7 @@ class RolePermissionRelation(Model):
         null=True,
         on_delete=fields.SET_NULL,
     )
-    application = fields.ForeignKeyField(
-        "models.Application",
-        related_name="roles",
-        on_delete=fields.CASCADE,
-        source_field="application_id",  # явное указание
-    )
+
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
@@ -161,6 +157,11 @@ class UserCompanyRelation(Model):
     )
     role = fields.ForeignKeyField(
         "models.Role", related_name="user_company_relations", on_delete=fields.CASCADE
+    )
+    application = fields.ForeignKeyField(
+        "models.Application",
+        related_name="roles",
+        on_delete=fields.CASCADE,
     )
     created_at = fields.DatetimeField(auto_now_add=True)
 

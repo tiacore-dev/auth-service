@@ -35,6 +35,7 @@ async def invite_user(
         "sub": data.email,
         "company_id": str(data.company_id),
         "role_id": str(data.role_id),
+        "application_id": data.application_id,
     }
     token = generate_token(payload, settings)
     application = await Application.get_or_none(id=data.application_id)
@@ -96,17 +97,21 @@ async def register_with_token(
     token_data = verify_jwt_token(token, settings)
     company_id = token_data.get("company_id")
     role_id = token_data.get("role_id")
+    application_id = token_data.get("application_id")
     if not company_id or not role_id:
         raise HTTPException(status_code=400, detail="Invalid invitation token")
     existing_relation = await UserCompanyRelation.exists(
-        user=user, company_id=company_id, role_id=role_id
+        user=user, company_id=company_id, role_id=role_id, application_id=application_id
     )
 
     if existing_relation:
         logger.info("🔁 Связь уже существует")
     else:
         await UserCompanyRelation.create(
-            user=user, company_id=company_id, role_id=role_id
+            user=user,
+            company_id=company_id,
+            role_id=role_id,
+            application_id=application_id,
         )
     return TokenResponse(
         access_token=create_access_token({"sub": user.email}, settings),
@@ -125,12 +130,13 @@ async def accept_invite(token: str = Query(...), settings=Depends(get_settings))
     token_data = verify_jwt_token(token, settings)
     company_id = token_data.get("company_id")
     role_id = token_data.get("role_id")
+    application_id = token_data.get("application_id")
     email = token_data.get("sub")
     user = await User.get_or_none(email=email)
     if not company_id or not role_id or not user:
         raise HTTPException(status_code=400, detail="Invalid invitation token")
     existing_relation = await UserCompanyRelation.exists(
-        user=user, company_id=company_id, role_id=role_id
+        user=user, company_id=company_id, role_id=role_id, application_id=application_id
     )
 
     if existing_relation:

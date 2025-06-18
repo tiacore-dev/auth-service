@@ -50,7 +50,12 @@ async def add_user(data: UserCreateSchema = Body(...), _=Depends(require_superad
         role = await Role.get_or_none(system_name="user")
         company = await Company.get_or_none(id=data.company_id)
         if role and company:
-            await UserCompanyRelation.create(user=user, company=company, role=role)
+            await UserCompanyRelation.create(
+                user=user,
+                company=company,
+                role=role,
+                application_id=data.application_id,
+            )
         return {"user_id": str(user.id)}
     except (KeyError, TypeError, ValueError) as e:
         logger.warning(f"Ошибка данных: {e}")

@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
-from app.database.models import Application, Permission, Role, RolePermissionRelation
+from app.database.models import Permission, Role, RolePermissionRelation
 
 
 @pytest.mark.asyncio
@@ -10,13 +10,11 @@ async def test_add_role_permission_relation(
     jwt_token_admin: dict,
     seed_role_admin: Role,
     seed_permission: Permission,
-    seed_application: Application,
 ):
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
     data = {
         "role_id": str(seed_role_admin.id),
         "permission_id": seed_permission.id,
-        "application_id": seed_application.id,
     }
 
     response = await test_app.post(

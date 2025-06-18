@@ -12,7 +12,7 @@ from tiacore_lib.pydantic_models.user_company_relation_models import (
 from tiacore_lib.utils.validate_helpers import validate_exists
 from tortoise.expressions import Q
 
-from app.database.models import Company, Role, User, UserCompanyRelation
+from app.database.models import Application, Company, Role, User, UserCompanyRelation
 from app.dependencies.permissions import with_permission_and_user_company_check
 from app.handlers.depends import require_permission_in_context
 
@@ -32,6 +32,7 @@ async def add_user_company_relation(
     await validate_exists(Role, data.role_id, "Роль")
     await validate_exists(User, data.user_id, "Пользователь")
     await validate_exists(Company, data.company_id, "Компания")
+    await validate_exists(Application, data.application_id, "Приложение")
 
     if not context.get("is_superadmin"):
         is_related = await UserCompanyRelation.exists(
@@ -42,9 +43,7 @@ async def add_user_company_relation(
                 status_code=403, detail="Вы не имеете доступа к этой компании"
             )
 
-    relation = await UserCompanyRelation.create(
-        user_id=data.user_id, company_id=data.company_id, role_id=data.role_id
-    )
+    relation = await UserCompanyRelation.create(**data.model_dump())
 
     return {"user_company_id": str(relation.id)}
 
@@ -72,6 +71,10 @@ async def update_user_company_relation(
         await validate_exists(User, update_data["user_id"], "Пользователь")
     if "company_id" in update_data:
         await validate_exists(Company, update_data["company_id"], "Компания")
+    if "application_id" in update_data:
+        await validate_exists(
+            Application, update_data.get("application_id"), "Приложение"
+        )
 
     await relation.update_from_dict(update_data)
     await relation.save()
@@ -115,6 +118,8 @@ async def get_user_company_relations(
         query &= Q(company_id=context["company_id"])
     if filters.role_id:
         query &= Q(role=filters.role_id)
+    if filters.application_id:
+        query &= Q(application_id=filters.application_id)
 
     if filters.order not in ("asc", "desc"):
         raise HTTPException(
@@ -131,7 +136,9 @@ async def get_user_company_relations(
         .prefetch_related("user", "company", "role")
         .offset((filters.page - 1) * filters.page_size)
         .limit(filters.page_size)
-        .values("id", "user_id", "company_id", "role_id", "created_at")
+        .values(
+            "id", "user_id", "company_id", "role_id", "created_at", "application_id"
+        )
     )
 
     relations = [UserCompanyRelationSchema(**rel) for rel in relations_raw]
@@ -152,7 +159,9 @@ async def get_user_company_relation(
         await UserCompanyRelation.filter(id=user_company_id)
         .prefetch_related("user", "company", "role")
         .first()
-        .values("id", "user_id", "company_id", "role_id", "created_at")
+        .values(
+            "id", "user_id", "company_id", "role_id", "created_at", "application_id"
+        )
     )
 
     if not relation:

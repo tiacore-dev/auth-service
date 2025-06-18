@@ -11,7 +11,7 @@ async def get_company_permissions_for_user(
         return None
 
     relations = await UserCompanyRelation.filter(user=user).select_related(
-        "company", "role"
+        "company", "role", "application"
     )
     if not relations:
         return {}
@@ -21,20 +21,22 @@ async def get_company_permissions_for_user(
 
     role_permissions = await RolePermissionRelation.filter(
         role_id__in=role_ids
-    ).select_related("permission", "role", "application")
+    ).select_related("permission", "role", "restriction")
 
-    role_app_map = defaultdict(lambda: defaultdict(list))
+    # role_id → List[permission.id]
+    role_perm_map = defaultdict(list)
     for rp in role_permissions:
-        role_app_map[str(rp.role.id)][str(rp.application.id)].append(rp.permission.id)
+        role_perm_map[str(rp.role.id)].append(rp.permission.id)
 
     result: Dict[str, Dict[str, List[dict]]] = defaultdict(lambda: defaultdict(list))
     for rel in relations:
+        app_id = str(rel.application.id)
         company_id = str(rel.company.id)
         role_id = str(rel.role.id)
         role_name = role_id_to_name.get(role_id, "Неизвестная роль")
+        perms = role_perm_map.get(role_id, [])
 
-        for app_id, perms in role_app_map[role_id].items():
-            result[app_id][company_id].append({"role": role_name, "permissions": perms})
+        result[app_id][company_id].append({"role": role_name, "permissions": perms})
 
     return result
 
@@ -45,9 +47,10 @@ async def get_company_permissions_by_application(
     if user.is_superadmin:
         return None
 
-    relations = await UserCompanyRelation.filter(user=user).select_related(
-        "company", "role"
-    )
+    relations = await UserCompanyRelation.filter(
+        user=user, application_id=application_id
+    ).select_related("company", "role", "application")
+
     if not relations:
         return {}
 
@@ -55,21 +58,21 @@ async def get_company_permissions_by_application(
     role_id_to_name = {str(rel.role.id): rel.role.name for rel in relations}
 
     role_permissions = await RolePermissionRelation.filter(
-        role_id__in=role_ids, application_id=application_id
-    ).select_related("permission", "role", "application")
+        role_id__in=role_ids
+    ).select_related("permission", "role", "restriction")
 
-    # (role_id, app_id) → List[permission_name]
-    role_app_map = defaultdict(lambda: defaultdict(list))
+    role_perm_map = defaultdict(list)
     for rp in role_permissions:
-        role_app_map[str(rp.role.id)][str(rp.application.id)].append(rp.permission.id)
+        role_perm_map[str(rp.role.id)].append(rp.permission.id)
 
     result: Dict[str, Dict[str, List[dict]]] = defaultdict(lambda: defaultdict(list))
     for rel in relations:
+        app_id = str(rel.application.id)
         company_id = str(rel.company.id)
         role_id = str(rel.role.id)
         role_name = role_id_to_name.get(role_id, "Неизвестная роль")
+        perms = role_perm_map.get(role_id, [])
 
-        for app_id, perms in role_app_map[role_id].items():
-            result[app_id][company_id].append({"role": role_name, "permissions": perms})
+        result[app_id][company_id].append({"role": role_name, "permissions": perms})
 
     return result

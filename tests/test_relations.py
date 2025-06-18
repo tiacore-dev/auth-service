@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
-from app.database.models import Company, Role, User, UserCompanyRelation
+from app.database.models import Application, Company, Role, User, UserCompanyRelation
 
 
 @pytest.mark.asyncio
@@ -11,6 +11,7 @@ async def test_add_user_company_relation(
     seed_user: User,
     seed_company: Company,
     seed_role_admin: Role,
+    seed_application: Application,
 ):
     """Проверка создания связи пользователя и компании"""
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
@@ -19,6 +20,7 @@ async def test_add_user_company_relation(
         "user_id": str(seed_user.id),
         "company_id": str(seed_company.id),
         "role_id": str(seed_role_admin.id),
+        "application_id": seed_application.id,
     }
 
     response = await test_app.post(

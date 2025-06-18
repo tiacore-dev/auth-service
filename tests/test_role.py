@@ -8,7 +8,7 @@ from app.database.models import Role
 async def test_add_role(test_app: AsyncClient, jwt_token_admin: dict):
     """Тест добавления новой роли."""
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
-    data = {"role_name": "Test Role"}
+    data = {"role_name": "Test Role", "application_id": "test_app"}
 
     response = await test_app.post("/api/roles/add", headers=headers, json=data)
     assert response.status_code == 201, (

@@ -28,11 +28,11 @@ role_router = APIRouter()
 async def add_role(
     data: RoleCreateSchema = Body(...), _: dict = Depends(require_superadmin)
 ):
-    logger.info(f"Создание роли: {data.model_dump()}")
+    logger.info("Создание роли")
     try:
-        role = await Role.create(name=data.name)
+        role = await Role.create(**data.model_dump())
         logger.success(f"Роль {role.name} ({role.id}) успешно создана")
-        return {"role_id": role.id}
+        return RoleResponseSchema(role_id=role.id)
     except (KeyError, TypeError, ValueError) as e:
         logger.warning(f"Ошибка данных: {e}")
         raise HTTPException(status_code=400, detail="Некорректные данные") from e
@@ -50,7 +50,7 @@ async def add_many_roles(
 ):
     logger.info(f"Создание роли: {data.model_dump()}")
     try:
-        role = await Role.create(name=data.name)
+        role = await Role.create(name=data.name, application_id=data.application_id)
         await RolePermissionRelation.bulk_create(
             [
                 RolePermissionRelation(
@@ -139,6 +139,8 @@ async def get_roles(
     query = Q()
     if filters.role_name:
         query &= Q(name__icontains=filters.role_name)
+    if filters.application_id:
+        query &= Q(application_id=filters.application_id)
 
     if filters.order not in ("asc", "desc"):
         raise HTTPException(
@@ -154,7 +156,7 @@ async def get_roles(
         .order_by(sort_field)
         .offset((filters.page - 1) * filters.page_size)
         .limit(filters.page_size)
-        .values("id", "name", "system_name")
+        .values("id", "name", "system_name", "application_id")
     )
 
     roles = [RoleSchema(**role) for role in roles_raw]
@@ -172,11 +174,7 @@ async def get_role(
     role_raw = (
         await Role.filter(id=role_id)
         .first()
-        .values(
-            "id",
-            "name",
-            "system_name",
-        )
+        .values("id", "name", "system_name", "application_id")
     )
 
     if not role_raw:
