@@ -96,7 +96,7 @@ def require_permission_or_self_view(permission: str):
             )
             return ctx
 
-        if str(ctx["user"]) == str(user_id):
+        if str(ctx["user_id"]) == str(user_id):
             logger.info(
                 f"Пользователь {ctx['user']} запрашивает сам себя — доступ разрешён"
             )
