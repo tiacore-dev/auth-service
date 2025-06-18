@@ -196,7 +196,7 @@ async def get_user(
         raise HTTPException(status_code=404, detail="Пользователь не найден")
 
     # 🔐 Проверка доступа
-    if not context["is_superadmin"] or not company_id:
+    if not context["is_superadmin"] and not company_id:
         allowed_user_ids = await UserCompanyRelation.filter(
             company=company_id
         ).values_list("user_id", flat=True)
