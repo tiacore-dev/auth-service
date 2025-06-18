@@ -196,15 +196,24 @@ async def get_user(
         raise HTTPException(status_code=404, detail="Пользователь не найден")
 
     # 🔐 Проверка доступа
-    if not context["is_superadmin"] and not company_id:
-        allowed_user_ids = await UserCompanyRelation.filter(
-            company=company_id
-        ).values_list("user_id", flat=True)
+    if not context["is_superadmin"]:
+        # Проверяем: есть ли у запрашиваемого пользователя вообще связи
+        target_user_has_relations = await UserCompanyRelation.filter(
+            user=user_id
+        ).exists()
 
-        if user_id not in allowed_user_ids:
-            raise HTTPException(
-                status_code=403, detail="Нет доступа к этому пользователю"
-            )
+        if target_user_has_relations:
+            if not company_id:
+                raise HTTPException(status_code=400, detail="Не указана компания")
+
+            allowed_user_ids = await UserCompanyRelation.filter(
+                company=company_id
+            ).values_list("user_id", flat=True)
+
+            if user_id not in allowed_user_ids:
+                raise HTTPException(
+                    status_code=403, detail="Нет доступа к этому пользователю"
+                )
 
     return UserSchema(
         user_id=user.id,
