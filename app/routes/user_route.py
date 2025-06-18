@@ -140,7 +140,7 @@ async def get_users(
             return UserListResponseSchema(total=0, users=[])
 
         related_user_ids = await UserCompanyRelation.filter(
-            company=context["company"]
+            company=context["company_id"]
         ).values_list("user_id", flat=True)
 
         if related_user_ids:
@@ -197,7 +197,7 @@ async def get_user(
     if not context["is_superadmin"]:
         # Получаем список user_id в рамках текущей компании
         allowed_user_ids = await UserCompanyRelation.filter(
-            company=context["company"]
+            company=context["companid"]
         ).values_list("user_id", flat=True)
 
         if user_id not in allowed_user_ids:

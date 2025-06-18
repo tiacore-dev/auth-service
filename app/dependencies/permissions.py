@@ -18,7 +18,7 @@ def with_permission_and_company_check(permission: str):
             return context
 
         related_user_ids = await UserCompanyRelation.filter(
-            company=context["company"]
+            company=context["company_id"]
         ).values_list("user_id", flat=True)
 
         if user_id not in related_user_ids:
@@ -80,7 +80,7 @@ def with_permission_and_user_company_check(permission: str):
             id=user_company_id
         ).prefetch_related("company")
 
-        if not relation or str(relation.company.id) != str(context["company"]):
+        if not relation or str(relation.company.id) != str(context["company_id"]):
             raise HTTPException(
                 status_code=403,
                 detail="""Связь пользователя с компанией не найдена или не 

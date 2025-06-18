@@ -112,7 +112,7 @@ async def get_user_company_relations(
         if filters.company_id:
             query &= Q(company_id=filters.company_id)
     else:
-        query &= Q(company_id=context["company"])
+        query &= Q(company_id=context["company_id"])
     if filters.role_id:
         query &= Q(role=filters.role_id)
 
