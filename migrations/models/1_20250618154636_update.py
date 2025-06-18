@@ -13,7 +13,9 @@ async def upgrade(db: BaseDBAsyncClient) -> str:
         ALTER TABLE "role_permission_relations" DROP CONSTRAINT IF EXISTS "role_permission_relations_application_id_fkey";
         ALTER TABLE "role_permission_relations" DROP COLUMN IF EXISTS "application_id";
 
-        ALTER TABLE "user_to_company_relations" ADD COLUMN "application_id" VARCHAR(100) NOT NULL;
+        ALTER TABLE "user_to_company_relations" ADD COLUMN "application_id" VARCHAR(100);
+        UPDATE "user_to_company_relations" SET "application_id" = 'auth_app';
+        ALTER TABLE "user_to_company_relations" ALTER COLUMN "application_id" SET NOT NULL;
         ALTER TABLE "user_to_company_relations" ADD CONSTRAINT "user_to_company_relations_application_id_fkey"
             FOREIGN KEY ("application_id") REFERENCES "applications" ("id") ON DELETE CASCADE;
 
