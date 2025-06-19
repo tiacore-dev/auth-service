@@ -110,12 +110,16 @@ async def give_user_data(
 
     company_list = [relation.company.id for relation in relations]
     permissions = await get_company_permissions_by_application(user, application_id)
+    if not permissions:
+        filtered_permissions = {}
+    else:
+        filtered_permissions = permissions.get(application_id, {})
 
     return MEResponse(
         user_id=user.id,
         is_superadmin=user.is_superadmin,
         email=user.email,
-        permissions=permissions,
+        permissions=filtered_permissions,
         companies=company_list,
         relations=relation_list,
     )
