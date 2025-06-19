@@ -138,7 +138,7 @@ async def get_companies(
         # 📊 Подсчёт и выборка
         total_count = await Company.filter(query).count()
 
-        sort_column = filters.get("sort_by", "company_name")
+        sort_column = filters.get("sort_by", "name")
         sort_column = "name" if sort_column == "company_name" else sort_column
         order_by = f"{'-' if filters.get('order') == 'desc' else ''}{sort_column}"
 
@@ -150,18 +150,12 @@ async def get_companies(
             .order_by(order_by)
             .offset((page - 1) * page_size)
             .limit(page_size)
+            .values("id", "name", "description")
         )
 
         return CompanyListResponseSchema(
             total=total_count,
-            companies=[
-                CompanySchema(
-                    company_id=company.id,
-                    company_name=company.name,
-                    description=company.description,
-                )
-                for company in companies
-            ],
+            companies=[CompanySchema(**company) for company in companies],
         )
 
     except (KeyError, TypeError, ValueError) as e:
@@ -180,7 +174,9 @@ async def get_company(
 ):
     logger.info(f"Запрос на просмотр компании: {company_id}")
     try:
-        company = await Company.get_or_none(id=company_id)
+        company = await Company.get_or_none(id=company_id).values(
+            "id", "name", "description"
+        )
         if company is None:
             logger.warning(f"Компания {company_id} не найдена")
             raise HTTPException(status_code=404, detail="Компания не найдена")
@@ -191,11 +187,7 @@ async def get_company(
         if not user or (not user.is_superadmin and not relation):
             raise HTTPException(status_code=403, detail="Нет доступа к этой компании")
 
-        company_schema = CompanySchema(
-            company_id=company.id,
-            company_name=company.name,
-            description=company.description,
-        )
+        company_schema = CompanySchema(**company)
 
         logger.success(f"Найдена компания: {company_schema}")
         return company_schema
