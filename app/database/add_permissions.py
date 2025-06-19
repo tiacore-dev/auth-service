@@ -150,6 +150,17 @@ permissions = [
     ("delete_prompt", "Удаление промпта", "observer_app"),
     ("view_prompt", "Просмотр промпта", "observer_app"),
     ("get_all_prompts", "Просмотр всех промптов", "observer_app"),
+    # Schedules
+    ("add_schedule", "Добавление расписания", "observer_app"),
+    ("toggle_schedule", "Добавление расписания", "observer_app"),
+    ("edit_schedule", "Редактирование расписания", "observer_app"),
+    ("delete_schedule", "Удаление расписания", "observer_app"),
+    ("view_schedule", "Просмотр расписания", "observer_app"),
+    ("get_all_schedules", "Просмотр всех расписаний", "observer_app"),
+    # Analysis
+    ("create_analysis", "Создание анализа", "observer_app"),
+    ("view_analysis", "Просмотр анализа", "observer_app"),
+    ("get_all_analyses", "Просмотр всех анализов", "observer_app"),
     # Storages
     ("add_storage", "Добавление склада", "reference_app"),
     ("edit_storage", "Редактирование склада", "reference_app"),
