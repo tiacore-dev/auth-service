@@ -124,7 +124,7 @@ async def get_companies(
         if not user.is_superadmin:
             related_company_ids = await UserCompanyRelation.filter(
                 user=user
-            ).values_list("company__company_id", flat=True)
+            ).values_list("company__id", flat=True)
 
             if not related_company_ids:
                 return CompanyListResponseSchema(total=0, companies=[])
