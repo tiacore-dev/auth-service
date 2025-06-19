@@ -47,7 +47,12 @@ async def add_company(
 
         role = await Role.get_or_none(system_name="admin")
         if role:
-            await UserCompanyRelation.create(role=role, company=company, user=user)
+            await UserCompanyRelation.create(
+                role=role,
+                company=company,
+                user=user,
+                application_id=data.application_id,
+            )
             event = await build_user_event(user, event_type=EventType.USER_UPDATED)
             await request.app.state.publisher.publish_event(event)
 
