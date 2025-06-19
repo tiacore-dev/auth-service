@@ -129,7 +129,7 @@ async def get_companies(
             if not related_company_ids:
                 return CompanyListResponseSchema(total=0, companies=[])
 
-            query &= Q(company_id__in=related_company_ids)
+            query &= Q(id__in=related_company_ids)
 
         # 🔎 Фильтрация по названию
         if filters.get("search"):
