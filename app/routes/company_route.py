@@ -11,9 +11,10 @@ from tiacore_lib.pydantic_models.company_models import (
     company_filter_params,
 )
 from tiacore_lib.rabbit.models import EventType
+from tiacore_lib.utils.validate_helpers import validate_exists
 from tortoise.expressions import Q
 
-from app.database.models import Company, Role, User, UserCompanyRelation
+from app.database.models import Application, Company, Role, User, UserCompanyRelation
 from app.handlers.auth import get_current_user
 from app.utils.event_builder import build_user_event
 
@@ -32,35 +33,32 @@ async def add_company(
     user_data: dict = Depends(get_current_user),
 ):
     logger.info(f"Создание компании: {data.model_dump()}")
-    try:
-        company = await Company.create(name=data.name, description=data.description)
 
-        if not company:
-            raise HTTPException(status_code=500, detail="Не удалось создать компанию")
+    company = await Company.create(name=data.name, description=data.description)
 
-        logger.success(f"Компания создана: {company.id}")
-        user = await User.get_or_none(email=user_data["email"])
-        if not user:
-            raise HTTPException(status_code=400, detail="Пользователь не найден")
-        if user.is_superadmin:
-            return {"company_id": str(company.id)}
+    if not company:
+        raise HTTPException(status_code=500, detail="Не удалось создать компанию")
 
-        role = await Role.get_or_none(system_name="admin")
-        if role:
-            await UserCompanyRelation.create(
-                role=role,
-                company=company,
-                user=user,
-                application_id=data.application_id,
-            )
-            event = await build_user_event(user, event_type=EventType.USER_UPDATED)
-            await request.app.state.publisher.publish_event(event)
-
+    logger.success(f"Компания создана: {company.id}")
+    user = await User.get_or_none(email=user_data["email"])
+    if not user:
+        raise HTTPException(status_code=400, detail="Пользователь не найден")
+    if user.is_superadmin:
         return {"company_id": str(company.id)}
+    await validate_exists(Application, data.application_id, "Приложение")
 
-    except (KeyError, TypeError, ValueError) as e:
-        logger.warning(f"Ошибка данных: {e}")
-        raise HTTPException(status_code=400, detail="Некорректные данные") from e
+    role = await Role.get_or_none(system_name="admin")
+    if role:
+        await UserCompanyRelation.create(
+            role=role,
+            company=company,
+            user=user,
+            application_id=data.application_id,
+        )
+        event = await build_user_event(user, event_type=EventType.USER_UPDATED)
+        await request.app.state.publisher.publish_event(event)
+
+    return {"company_id": str(company.id)}
 
 
 # ✅ 2. Изменение компании
@@ -74,23 +72,17 @@ async def edit_company(
     data: CompanyEditSchema = Body(),
     _=Depends(get_current_user),
 ):
-    logger.info(
-        f"Обновление компании {company_id}: {data.model_dump(exclude_unset=True)}"
+    logger.info(f"Обновление компании {company_id}")
+
+    updated_rows = await Company.filter(id=company_id).update(
+        **data.model_dump(exclude_unset=True)
     )
-    try:
-        updated_rows = await Company.filter(id=company_id).update(
-            **data.model_dump(exclude_unset=True)
-        )
 
-        if not updated_rows:
-            raise HTTPException(status_code=404, detail="Компания не найдена")
+    if not updated_rows:
+        raise HTTPException(status_code=404, detail="Компания не найдена")
 
-        logger.success(f"Компания {company_id} успешно обновлена")
-        return {"company_id": str(company_id)}
-
-    except (KeyError, TypeError, ValueError) as e:
-        logger.warning(f"Ошибка данных: {e}")
-        raise HTTPException(status_code=400, detail="Некорректные данные") from e
+    logger.success(f"Компания {company_id} успешно обновлена")
+    return {"company_id": str(company_id)}
 
 
 # ✅ 3. Удаление компании

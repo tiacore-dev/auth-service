@@ -1,15 +1,18 @@
 import pytest
 from httpx import AsyncClient
 
-from app.database.models import Company
+from app.database.models import Application, Company
 
 
 @pytest.mark.asyncio
-async def test_add_company(test_app: AsyncClient, jwt_token_admin):
+async def test_add_company(
+    test_app: AsyncClient, jwt_token_admin, seed_application: Application
+):
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
     data = {
         "company_name": "Test Company Added",
         "description": "Описание тестовой компании",
+        "application_id": str(seed_application.id),
     }
 
     response = await test_app.post("/api/companies/add", headers=headers, json=data)

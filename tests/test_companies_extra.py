@@ -14,9 +14,13 @@ async def test_get_companies_search(
 
 
 @pytest.mark.asyncio
-async def test_add_company_short_name(test_app, jwt_token_admin):
+async def test_add_company_short_name(test_app, jwt_token_admin, seed_application):
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
-    data = {"company_name": "ab", "description": "fail"}
+    data = {
+        "company_name": "ab",
+        "description": "fail",
+        "application_id": str(seed_application.id),
+    }
 
     response = await test_app.post("/api/companies/add", headers=headers, json=data)
 

@@ -4,18 +4,24 @@ import pytest
 from httpx import AsyncClient
 from loguru import logger
 
-from app.database.models import Company
+from app.database.models import Application, Company
 
 
 @pytest.mark.asyncio
 async def test_mass_create_companies(
-    test_app: AsyncClient, jwt_token_admin: dict, seed_company: Company
+    test_app: AsyncClient,
+    jwt_token_admin: dict,
+    seed_company: Company,
+    seed_application: Application,
 ):
     """Создаем 100 компаний подряд и проверяем, не падает ли API"""
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
 
     for i in range(100):
-        data = {"company_name": f"Company {i}"}
+        data = {
+            "company_name": f"Company {i}",
+            "application_id": str(seed_application.id),
+        }
         response = await test_app.post(
             f"/api/companies/add?company={seed_company.id}",
             headers=headers,
@@ -26,13 +32,19 @@ async def test_mass_create_companies(
 
 @pytest.mark.asyncio
 async def test_mass_create_companies_async(
-    test_app: AsyncClient, jwt_token_admin: dict, seed_company: Company
+    test_app: AsyncClient,
+    jwt_token_admin: dict,
+    seed_company: Company,
+    seed_application: Application,
 ):
     """Создаем 100 компаний конкурентно"""
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
 
     async def create_company(i):
-        data = {"company_name": f"Company {i}"}
+        data = {
+            "company_name": f"Company {i}",
+            "application_id": str(seed_application.id),
+        }
         response = await test_app.post(
             f"/api/companies/add?company={seed_company.id}",
             headers=headers,
@@ -62,7 +74,10 @@ async def test_unauthorized_access(test_app: AsyncClient, headers):
 
 @pytest.mark.asyncio
 async def test_mass_delete_companies(
-    test_app: AsyncClient, jwt_token_admin: dict, seed_company: Company
+    test_app: AsyncClient,
+    jwt_token_admin: dict,
+    seed_company: Company,
+    seed_application: Application,
 ):
     """Создаем 10 компаний, затем удаляем их всех"""
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
@@ -70,7 +85,10 @@ async def test_mass_delete_companies(
 
     # Создаем 10 компаний
     for i in range(10):
-        data = {"company_name": f"ToDelete {i}"}
+        data = {
+            "company_name": f"ToDelete {i}",
+            "application_id": str(seed_application.id),
+        }
         response = await test_app.post(
             f"/api/companies/add?company={seed_company.id}",
             headers=headers,
@@ -94,13 +112,20 @@ async def test_mass_delete_companies(
 
 @pytest.mark.asyncio
 async def test_large_data_handling(
-    test_app: AsyncClient, jwt_token_admin: dict, seed_company: Company
+    test_app: AsyncClient,
+    jwt_token_admin: dict,
+    seed_company: Company,
+    seed_application: Application,
 ):
     """Проверяем, справляется ли API с очень длинными данными"""
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
     large_text = "A" * 10_000  # 10 тысяч символов
 
-    data = {"company_name": large_text, "description": large_text}
+    data = {
+        "company_name": large_text,
+        "description": large_text,
+        "application_id": str(seed_application.id),
+    }
     response = await test_app.post(
         f"/api/companies/add?company={seed_company.id}",
         headers=headers,
