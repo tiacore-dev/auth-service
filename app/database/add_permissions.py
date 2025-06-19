@@ -152,7 +152,7 @@ permissions = [
     ("get_all_prompts", "Просмотр всех промптов", "observer_app"),
     # Schedules
     ("add_schedule", "Добавление расписания", "observer_app"),
-    ("toggle_schedule", "Добавление расписания", "observer_app"),
+    ("toggle_schedule", "Отключение/включение расписания", "observer_app"),
     ("edit_schedule", "Редактирование расписания", "observer_app"),
     ("delete_schedule", "Удаление расписания", "observer_app"),
     ("view_schedule", "Просмотр расписания", "observer_app"),
