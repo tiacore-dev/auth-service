@@ -173,25 +173,21 @@ async def get_company(
     user_data: dict = Depends(get_current_user),
 ):
     logger.info(f"Запрос на просмотр компании: {company_id}")
-    try:
-        company = await Company.get_or_none(id=company_id).values(
-            "id", "name", "description"
-        )
-        if company is None:
-            logger.warning(f"Компания {company_id} не найдена")
-            raise HTTPException(status_code=404, detail="Компания не найдена")
-        user = await User.get_or_none(email=user_data["email"])
-        relation = await UserCompanyRelation.filter(
-            user=user, company_id=company_id
-        ).exists()
-        if not user or (not user.is_superadmin and not relation):
-            raise HTTPException(status_code=403, detail="Нет доступа к этой компании")
 
-        company_schema = CompanySchema(**company)
+    company = await Company.get_or_none(id=company_id).values(
+        "id", "name", "description"
+    )
+    if company is None:
+        logger.warning(f"Компания {company_id} не найдена")
+        raise HTTPException(status_code=404, detail="Компания не найдена")
+    user = await User.get_or_none(email=user_data["email"])
+    relation = await UserCompanyRelation.filter(
+        user=user, company_id=company_id
+    ).exists()
+    if not user or (not user.is_superadmin and not relation):
+        raise HTTPException(status_code=403, detail="Нет доступа к этой компании")
 
-        logger.success(f"Найдена компания: {company_schema}")
-        return company_schema
+    company_schema = CompanySchema(**company)
 
-    except (KeyError, TypeError, ValueError) as e:
-        logger.warning(f"Ошибка данных: {e}")
-        raise HTTPException(status_code=400, detail="Некорректные данные") from e
+    logger.success(f"Найдена компания: {company_schema}")
+    return company_schema

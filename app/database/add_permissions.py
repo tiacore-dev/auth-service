@@ -75,6 +75,11 @@ permissions = [
     # Legal Entities
     ("add_legal_entity", "Добавление юридического лица", "reference_app, crm_app"),
     ("edit_legal_entity", "Редактирование юридического лица", "reference_app, crm_app"),
+    (
+        "add_legal_entity_by_inn",
+        "Добавление юр. лица по инн и кпп",
+        "reference_app, crm_app",
+    ),
     ("delete_legal_entity", "Удаление юридического лица", "reference_app, crm_app"),
     ("view_legal_entity", "Просмотр юридического лица", "reference_app, crm_app"),
     (
