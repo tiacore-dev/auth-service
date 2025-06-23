@@ -204,7 +204,7 @@ async def get_user(
     if not context["is_superadmin"]:
         # Проверяем: есть ли у запрашиваемого пользователя вообще связи
         target_user_has_relations = await UserCompanyRelation.filter(
-            user=user_id
+            user_id=user_id
         ).exists()
 
         if target_user_has_relations:
@@ -212,7 +212,7 @@ async def get_user(
                 raise HTTPException(status_code=400, detail="Не указана компания")
 
             allowed_user_ids = await UserCompanyRelation.filter(
-                company=company_id
+                company_id=company_id
             ).values_list("user_id", flat=True)
 
             if user_id not in allowed_user_ids:
