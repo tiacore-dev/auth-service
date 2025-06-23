@@ -7,6 +7,7 @@ from tiacore_lib.pydantic_models.auth_models import (
 )
 from tiacore_lib.utils.verification import send_email
 
+from app.config import get_front_url
 from app.database.models import User, create_user
 from app.handlers.auth import (
     generate_token,
@@ -36,7 +37,8 @@ async def register(
         {"sub": str(user.id), "application_id": data.application_id}, settings
     )
     logger.info(f"Пользователь зарегистрирован: {user.email}, user_id={user.id}")
-    verification_link = f"{settings.FRONT_ORIGIN}/login?token={token}"
+    front_url = get_front_url(application_id=data.application_id, settings=settings)
+    verification_link = f"{front_url}/login?token={token}"
     body = f"""
     Здравствуйте!
 
@@ -65,7 +67,8 @@ async def resend_verification(
     token = generate_token(
         {"sub": str(user.id), "application_id": application_id}, settings
     )
-    verification_link = f"{settings.FRONT_ORIGIN}/login?token={token}"
+    front_url = get_front_url(application_id=application_id, settings=settings)
+    verification_link = f"{front_url}/login?token={token}"
     body = f"""
     Здравствуйте!
 

@@ -5,9 +5,20 @@ from tiacore_lib.config import (
 )
 
 
+def get_front_url(application_id: str, settings) -> str:
+    return {
+        "crm_app": settings.FRONT_CRM,
+        "observer_app": settings.FRONT_OBSERVER,
+        "parcel_app": settings.FRONT_PARCEL,
+    }.get(application_id, settings.FRONT_ORIGIN)
+
+
 class BaseConfig(SharedBaseConfig):
     ALLOW_ORIGINS: list[str] = []
     FRONT_ORIGIN: str | None = None
+    FRONT_CRM: str | None = None
+    FRONT_OBSERVER: str | None = None
+    FRONT_PARCEL: str | None = None
     BACK_ORIGIN: str | None = None
     ORIGIN: str | None = None
 

@@ -8,6 +8,7 @@ from tiacore_lib.pydantic_models.auth_models import (
 )
 from tiacore_lib.utils.verification import send_email
 
+from app.config import get_front_url
 from app.database.models import (
     Application,
     Company,
@@ -44,8 +45,9 @@ async def invite_user(
             status_code=400, detail="Попытка пригласить в несуществующее приложение"
         )
     existing_user = await User.get_or_none(email=data.email)
+    front_url = get_front_url(application_id=application.id, settings=settings)
     if existing_user:
-        verification_link = f"{settings.FRONT_ORIGIN}/accept-invite?token={token}"
+        verification_link = f"{front_url}/accept-invite?token={token}"
         company = await Company.get_or_none(company_id=data.company_id)
         if not company:
             raise HTTPException(status_code=400, detail="Компания не найдена")
@@ -62,9 +64,7 @@ async def invite_user(
         await send_email(data.email, body, settings)
         return
 
-    verification_link = (
-        f"{settings.FRONT_ORIGIN}/invite?token={token}&email={data.email}"
-    )
+    verification_link = f"{front_url}/invite?token={token}&email={data.email}"
     body = f"""
     Здравствуйте!
 
