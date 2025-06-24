@@ -1,6 +1,15 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Request, status
+from fastapi import (
+    APIRouter,
+    Body,
+    Depends,
+    HTTPException,
+    Path,
+    Query,
+    Request,
+    status,
+)
 from loguru import logger
 from tiacore_lib.pydantic_models.company_models import (
     CompanyCreateSchema,
@@ -110,6 +119,7 @@ async def delete_company(
     summary="Получение списка компаний с фильтрацией",
 )
 async def get_companies(
+    application_id: str = Query("auth_app"),
     filters: dict = Depends(company_filter_params),
     user_data: dict = Depends(get_current_user),
 ):
@@ -123,7 +133,7 @@ async def get_companies(
 
         if not user.is_superadmin:
             related_company_ids = await UserCompanyRelation.filter(
-                user=user
+                user=user, application_id=application_id
             ).values_list("company__id", flat=True)
 
             if not related_company_ids:
