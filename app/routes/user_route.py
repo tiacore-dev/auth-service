@@ -127,12 +127,12 @@ async def get_users(
     if search_value:
         query &= Q(email__icontains=search_value)
 
-    company_filter = filters.get("company")
+    company_filter = filters.get("company_id")
 
     if context["is_superadmin"]:
         if company_filter:
             related_user_ids = await UserCompanyRelation.filter(
-                company=company_filter
+                company_id=company_filter
             ).values_list("user_id", flat=True)
 
             if related_user_ids:
@@ -140,12 +140,12 @@ async def get_users(
             else:
                 return UserListResponseSchema(total=0, users=[])
     else:
-        if not context.get("company"):
+        if not context.get("company_id"):
             logger.info(f"Нет компании в контексте для пользователя {context['user']}")
             return UserListResponseSchema(total=0, users=[])
 
         related_user_ids = await UserCompanyRelation.filter(
-            company=context["company_id"]
+            company_id=context["company_id"]
         ).values_list("user_id", flat=True)
 
         if related_user_ids:
