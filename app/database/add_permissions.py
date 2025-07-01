@@ -197,6 +197,7 @@ permissions = [
     ("edit_parcel", "Редактирование накладной", "parcel_app"),
     ("delete_parcel", "Удаление накладной", "parcel_app"),
     ("view_parcel", "Просмотр накладной", "parcel_app"),
+    ("get_parcel_current_status", "Просмотр нынешнего статуса накладной", "parcel_app"),
     ("get_all_parcels", "Просмотр всех накладных", "parcel_app"),
     # Parcel products
     ("add_parcel_product", "Добавление товара накладной", "parcel_app"),
@@ -210,6 +211,75 @@ permissions = [
     ("delete_parcel_cargo", "Удаление груза накладной", "parcel_app"),
     ("view_parcel_cargo", "Просмотр груза накладной", "parcel_app"),
     ("get_all_parcel_cargo", "Просмотр всех грузов накладных", "parcel_app"),
+    # Parcel status
+    ("view_parcel_status", "Просмотр статуса накладной", "parcel_app"),
+    ("get_all_parcel_statuses", "Просмотр всех статусов накладных", "parcel_app"),
+    # Arrival to warehouse
+    ("add_arrival_to_warehouse", "Добавление прибытия на склад", "parcel_app"),
+    ("edit_arrival_to_warehouse", "Редактирование прибытия на склад", "parcel_app"),
+    ("delete_arrival_to_warehouse", "Удаление прибытия на склад", "parcel_app"),
+    ("view_arrival_to_warehouse", "Просмотр прибытия на склад", "parcel_app"),
+    ("get_all_arrivals_to_warehouse", "Просмотр всех прибытий на склад", "parcel_app"),
+    # Delivery to recipient
+    ("add_delivery_to_recipient", "Добавление доставки клиенту", "parcel_app"),
+    ("edit_delivery_to_recipient", "Редактирование доставки клиенту", "parcel_app"),
+    ("delete_delivery_to_recipient", "Удаление доставки клиенту", "parcel_app"),
+    ("view_delivery_to_recipient", "Просмотр доставки клиенту", "parcel_app"),
+    (
+        "get_all_deliveries_to_recipient",
+        "Просмотр всех доставок клиенту",
+        "parcel_app",
+    ),
+    # Issue to employee
+    ("add_issue_to_employee", "Добавление передачи курьеру", "parcel_app"),
+    ("edit_issue_to_employee", "Редактирование передачи курьеру", "parcel_app"),
+    ("delete_issue_to_employee", "Удаление передачи курьеру", "parcel_app"),
+    ("view_issue_to_employee", "Просмотр передачи курьеру", "parcel_app"),
+    (
+        "get_all_issues_to_employee",
+        "Просмотр всех передач курьеру",
+        "parcel_app",
+    ),
+    # Pickup from sender
+    ("add_pickup_from_sender", "Добавление забора от отправителя", "parcel_app"),
+    ("edit_pickup_from_sender", "Редактирование забора от отправителя", "parcel_app"),
+    ("delete_pickup_from_sender", "Удаление забора от отправителя", "parcel_app"),
+    ("view_pickup_from_sender", "Просмотр забора от отправителя", "parcel_app"),
+    (
+        "get_all_pickups_from_sender",
+        "Просмотр всех заборов от отправителя",
+        "parcel_app",
+    ),
+    # Return to sender
+    ("add_return_to_sender", "Добавление возврата отправителю", "parcel_app"),
+    ("edit_return_to_sender", "Редактирование возврата отправителю", "parcel_app"),
+    ("delete_return_to_sender", "Удаление возврата отправителю", "parcel_app"),
+    ("view_return_to_sender", "Просмотр возврата отправителю", "parcel_app"),
+    (
+        "get_all_returns_to_sender",
+        "Просмотр всех возвратов отправителю",
+        "parcel_app",
+    ),
+    # Transit
+    ("add_transit", "Добавление отправления", "parcel_app"),
+    ("edit_transit", "Редактирование отправления", "parcel_app"),
+    ("delete_transit", "Удаление отправления", "parcel_app"),
+    ("view_transit", "Просмотр отправления", "parcel_app"),
+    (
+        "get_all_transits",
+        "Просмотр всех отправлений",
+        "parcel_app",
+    ),
+    # Transit details
+    ("add_transit_details", "Добавление деталей отправления", "parcel_app"),
+    ("edit_transit_details", "Редактирование деталей отправления", "parcel_app"),
+    ("delete_transit_details", "Удаление деталей отправления", "parcel_app"),
+    ("view_transit_details", "Просмотр деталей отправления", "parcel_app"),
+    (
+        "get_all_transit_details",
+        "Просмотр всех деталей отправлений",
+        "parcel_app",
+    ),
 ]
 
 
