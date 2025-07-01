@@ -166,12 +166,12 @@ permissions = [
     ("create_analysis", "Создание анализа", "observer_app"),
     ("view_analysis", "Просмотр анализа", "observer_app"),
     ("get_all_analyses", "Просмотр всех анализов", "observer_app"),
-    # Storages
-    ("add_storage", "Добавление склада", "reference_app"),
-    ("edit_storage", "Редактирование склада", "reference_app"),
-    ("delete_storage", "Удаление склада", "reference_app"),
-    ("view_storage", "Просмотр склада", "reference_app"),
-    ("get_all_storages", "Просмотр всех складов", "reference_app"),
+    # Warehouses
+    ("add_warehouse", "Добавление склада", "reference_app"),
+    ("edit_warehouse", "Редактирование склада", "reference_app"),
+    ("delete_warehouse", "Удаление склада", "reference_app"),
+    ("view_warehouse", "Просмотр склада", "reference_app"),
+    ("get_all_warehouses", "Просмотр всех складов", "reference_app"),
     # Cash Registers
     ("add_cash_register", "Добавление кассы", "reference_app"),
     ("edit_cash_register", "Редактирование кассы", "reference_app"),
@@ -192,6 +192,24 @@ permissions = [
     ("get_all_contract_files", "Просмотр всех файлов контрактов", "contract_app"),
     # Contract Types
     ("get_all_contract_types", "Просмотр всех типов контрактов", "contract_app"),
+    # Parcels
+    ("add_parcel", "Добавление накладной", "parcel_app"),
+    ("edit_parcel", "Редактирование накладной", "parcel_app"),
+    ("delete_parcel", "Удаление накладной", "parcel_app"),
+    ("view_parcel", "Просмотр накладной", "parcel_app"),
+    ("get_all_parcels", "Просмотр всех накладных", "parcel_app"),
+    # Parcel products
+    ("add_parcel_product", "Добавление товара накладной", "parcel_app"),
+    ("edit_parcel_product", "Редактирование товара накладной", "parcel_app"),
+    ("delete_parcel_product", "Удаление товара накладной", "parcel_app"),
+    ("view_parcel_product", "Просмотр товара накладной", "parcel_app"),
+    ("get_all_parcel_products", "Просмотр всех товаров накладных", "parcel_app"),
+    # Parcel cargo
+    ("add_parcel_cargo", "Добавление груза накладной", "parcel_app"),
+    ("edit_parcel_cargo", "Редактирование груза накладной", "parcel_app"),
+    ("delete_parcel_cargo", "Удаление груза накладной", "parcel_app"),
+    ("view_parcel_cargo", "Просмотр груза накладной", "parcel_app"),
+    ("get_all_parcel_cargo", "Просмотр всех грузов накладных", "parcel_app"),
 ]
 
 
