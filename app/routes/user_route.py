@@ -133,7 +133,7 @@ async def get_users(
         if company_filter:
             related_user_ids = await UserCompanyRelation.filter(
                 company_id=company_filter
-            ).values_list("user_id", flat=True)
+            ).values_list("user_id", "role_id")
 
             if related_user_ids:
                 query &= Q(id__in=related_user_ids)
@@ -146,7 +146,7 @@ async def get_users(
 
         related_user_ids = await UserCompanyRelation.filter(
             company_id=context["company_id"]
-        ).values_list("user_id", flat=True)
+        ).values_list("user_id", "role_id")
 
         if related_user_ids:
             query &= Q(id__in=related_user_ids)
@@ -159,6 +159,11 @@ async def get_users(
     page = filters.get("page", 1)
     page_size = filters.get("page_size", 10)
 
+    user_role_map = {user_id: role_id for user_id, role_id in related_user_ids}
+    role_ids = set(user_role_map.values())
+    roles = await Role.filter(id__in=role_ids)
+    role_name_map = {role.id: role.name for role in roles}
+
     total_count = await User.filter(query).count()
 
     users = (
@@ -167,7 +172,6 @@ async def get_users(
         .offset((page - 1) * page_size)
         .limit(page_size)
     )
-
     users_data = [
         UserSchema(
             user_id=user.id,
@@ -175,6 +179,7 @@ async def get_users(
             full_name=user.full_name,
             position=user.position,
             is_verified=user.is_verified,
+            role_name=role_name_map.get(user_role_map.get(user.id) or UUID(int=0)),
         )
         for user in users
     ]
