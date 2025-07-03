@@ -128,7 +128,7 @@ async def get_users(
         query &= Q(email__icontains=search_value)
 
     company_filter = filters.get("company_id")
-
+    related_user_ids = None
     if context["is_superadmin"]:
         if company_filter:
             related_user_ids = await UserCompanyRelation.filter(
@@ -158,11 +158,12 @@ async def get_users(
     order_by = f"{'-' if order == 'desc' else ''}{sort_by}"
     page = filters.get("page", 1)
     page_size = filters.get("page_size", 10)
-
-    user_role_map = {user_id: role_id for user_id, role_id in related_user_ids}
-    role_ids = set(user_role_map.values())
-    roles = await Role.filter(id__in=role_ids)
-    role_name_map = {role.id: role.name for role in roles}
+    role_name_map = None
+    if related_user_ids:
+        user_role_map = {user_id: role_id for user_id, role_id in related_user_ids}
+        role_ids = set(user_role_map.values())
+        roles = await Role.filter(id__in=role_ids)
+        role_name_map = {role.id: role.name for role in roles}
 
     total_count = await User.filter(query).count()
 
@@ -179,7 +180,9 @@ async def get_users(
             full_name=user.full_name,
             position=user.position,
             is_verified=user.is_verified,
-            role_name=role_name_map.get(user_role_map.get(user.id) or UUID(int=0)),
+            role_name=role_name_map.get(user_role_map.get(user.id) or UUID(int=0))
+            if role_name_map
+            else None,
         )
         for user in users
     ]
