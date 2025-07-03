@@ -140,12 +140,14 @@ async def get_users(
             else:
                 return UserListResponseSchema(total=0, users=[])
     else:
-        if not context.get("company_id"):
-            logger.info(f"Нет компании в контексте для пользователя {context['user']}")
+        if not filters.get("company_id"):
+            logger.info(
+                f"Нет компании в контексте для пользователя {filters.get('company_id')}"
+            )
             return UserListResponseSchema(total=0, users=[])
 
         related_user_ids = await UserCompanyRelation.filter(
-            company_id=context["company_id"]
+            company_id=filters.get("company_id")
         ).values_list("user_id", "role_id")
 
         if related_user_ids:
