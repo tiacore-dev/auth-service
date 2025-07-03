@@ -28,7 +28,7 @@ def create_app(config_name: ConfigName) -> FastAPI:
     async def lifespan(app: FastAPI):
         print("🔥 Lifespan START")
         print(f"Тип настроек: {type(settings)}")
-        if type(settings) is not TestConfig:
+        if not isinstance(settings, TestConfig):
             from app.database.config import TORTOISE_ORM
 
             await Tortoise.init(config=TORTOISE_ORM)
@@ -39,7 +39,6 @@ def create_app(config_name: ConfigName) -> FastAPI:
             await create_admin_user(settings)
             await create_test_data()
 
-            # 🔥 Init publisher
             app.state.publisher = EventPublisher(settings.AUTH_BROKER_URL)
             await app.state.publisher.connect()
         yield
