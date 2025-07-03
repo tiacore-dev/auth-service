@@ -30,7 +30,7 @@ async def create_admin_user(settings):
 
 
 async def create_test_data():
-    from app.database.models import Application, Company, Role
+    from app.database.models import Application, Company
 
     try:
         print("Создание тестовых данных...")
@@ -53,10 +53,11 @@ async def create_test_data():
             id="parcel_app", defaults={"name": "Сервис накладных"}
         )
         await Company.get_or_create(name="Tiacore")
-        await Role.get_or_create(
-            name="Администратор", defaults={"system_name": "admin"}
-        )
-        await Role.get_or_create(name="Пользователь", defaults={"system_name": "user"})
+        # await Role.get_or_create(
+        #     name="Администратор ", defaults={"system_name": "admin"}
+        # )
+        # await Role.get_or_create(name="Пользователь",
+        # defaults={"system_name": "user"})
         print("✅ Тестовые данные успешно созданы.")
     except Exception:
         import traceback
