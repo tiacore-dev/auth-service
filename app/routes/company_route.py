@@ -56,7 +56,9 @@ async def add_company(
         return {"company_id": str(company.id)}
     await validate_exists(Application, data.application_id, "Приложение")
 
-    role = await Role.get_or_none(system_name="admin")
+    role = await Role.get_or_none(
+        system_name="admin", application_id=data.application_id
+    )
     if role:
         await UserCompanyRelation.create(
             role=role,

@@ -1,3 +1,4 @@
+from loguru import logger
 from tortoise import Tortoise
 from tortoise.transactions import in_transaction
 
@@ -30,10 +31,11 @@ async def create_admin_user(settings):
 
 
 async def create_test_data():
-    from app.database.models import Application, Company
+    from app.database.models import Application, Company, Role
 
     try:
-        print("Создание тестовых данных...")
+        logger.info("Создание тестовых данных...")
+
         await Application.get_or_create(
             id="crm_app", defaults={"name": "CRM application"}
         )
@@ -53,8 +55,35 @@ async def create_test_data():
             id="parcel_app", defaults={"name": "Сервис накладных"}
         )
         await Company.get_or_create(name="Tiacore")
-
-        print("✅ Тестовые данные успешно созданы.")
+        await Role.get_or_create(
+            name="Администратор CRM", application_id="crm_app", system_name="admin"
+        )
+        await Role.get_or_create(
+            name="Администратор Observer",
+            application_id="observer_app",
+            system_name="admin",
+        )
+        await Role.get_or_create(
+            name="Администратор сервиса справочников",
+            application_id="reference_app",
+            system_name="admin",
+        )
+        await Role.get_or_create(
+            name="Администратор севриса контрактов",
+            application_id="contract_app",
+            system_name="admin",
+        )
+        await Role.get_or_create(
+            name="Администратор сервиса аутентификации",
+            application_id="auth_app",
+            system_name="admin",
+        )
+        await Role.get_or_create(
+            name="Администратор сервиса накладных",
+            application_id="parcel_app",
+            system_name="admin",
+        )
+        logger.info("✅ Тестовые данные успешно созданы.")
     except Exception:
         import traceback
 
