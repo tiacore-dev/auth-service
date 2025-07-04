@@ -13,7 +13,7 @@ from tiacore_lib.pydantic_models.user_models import (
 )
 from tortoise.expressions import Q
 
-from app.database.models import Company, Role, User, UserCompanyRelation, create_user
+from app.database.models import Company, Role, User, UserCompanyRelation
 from app.handlers.auth import get_current_user, require_superadmin
 
 user_router = APIRouter()
@@ -33,7 +33,7 @@ async def add_user(data: UserCreateSchema = Body(...), _=Depends(require_superad
             logger.warning(f"Пользователь с логином {data.email} уже существует")
             raise HTTPException(status_code=400, detail="Имя пользователя занято")
         logger.debug(f"Попытка создать пользователя {data.email}")
-        user = await create_user(
+        user = await User.create_user(
             email=data.email,
             full_name=data.full_name,
             position=data.position,

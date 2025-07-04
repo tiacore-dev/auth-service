@@ -5,7 +5,7 @@ from tortoise import Tortoise
 
 from app import create_app
 from app.config import ConfigName, _load_settings
-from app.database.models import Application, User, create_user
+from app.database.models import Application, User
 from app.handlers.auth import create_access_token, create_refresh_token, login_handler
 from app.utils.db_helpers import drop_all_tables
 
@@ -57,7 +57,7 @@ pytest_plugins = [
 @pytest.mark.asyncio
 async def seed_user():
     """Добавляет тестового пользователя в базу перед тестом."""
-    user = await create_user(
+    user = await User.create_user(
         email="test_user", password="qweasdzcx", position="user", full_name="Test User"
     )
     user.is_verified = True
@@ -70,7 +70,7 @@ async def seed_user():
 @pytest.mark.asyncio
 async def seed_admin():
     """Добавляет тестового администратора в базу перед тестом."""
-    admin = await create_user(
+    admin = await User.create_user(
         email="test_admin",
         password="adminpass",
         position="admin",

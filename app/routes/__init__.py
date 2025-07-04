@@ -6,6 +6,7 @@ from .company_route import company_router
 from .invite_route import invite_router
 from .permissions_route import permissions_router
 from .register_route import register_router
+from .reset_password_route import reset_router
 from .restrictions_route import restrictions_router
 from .role_permission_relation_route import role_relation_router
 from .role_route import role_router
@@ -17,6 +18,7 @@ def register_routes(app: FastAPI):
     app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
     app.include_router(register_router, prefix="/api", tags=["Register"])
     app.include_router(invite_router, prefix="/api", tags=["Invite"])
+    app.include_router(reset_router, prefix="/api", tags=["ResetPassword"])
     app.include_router(user_router, prefix="/api/users", tags=["Users"])
     app.include_router(company_router, prefix="/api/companies", tags=["Companies"])
     app.include_router(

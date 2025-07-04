@@ -6,8 +6,8 @@ from app.database.models import (
     Permission,
     Role,
     RolePermissionRelation,
+    User,
     UserCompanyRelation,
-    create_user,
 )
 
 
@@ -64,7 +64,7 @@ async def other_company():
 
 @pytest.fixture
 async def seed_other_user(seed_company_new, other_role, seed_application):
-    user = await create_user(
+    user = await User.create_user(
         email="Test User", password="123", full_name="User", position="user"
     )
     user.is_verified = True
@@ -80,7 +80,7 @@ async def seed_other_user(seed_company_new, other_role, seed_application):
 
 @pytest.fixture
 async def seed_other_user_wrong(other_company, other_role, seed_application):
-    user = await create_user(
+    user = await User.create_user(
         email="Test User", password="123", full_name="User", position="user"
     )
     user.is_verified = True
@@ -93,7 +93,7 @@ async def seed_other_user_wrong(other_company, other_role, seed_application):
 
 @pytest.fixture
 async def user_no_permission(seed_company_new, other_role, seed_application):
-    user = await create_user(
+    user = await User.create_user(
         email="noperm", full_name="No Perm", position="Dev", password="123"
     )
     user.is_verified = True
@@ -112,7 +112,7 @@ async def user_no_permission(seed_company_new, other_role, seed_application):
 
 @pytest.fixture
 async def user_wrong_company(role_with_edit_user, seed_company_new, seed_application):
-    user = await create_user(
+    user = await User.create_user(
         email="wrongco", full_name="Wrong Co", position="Dev", password="123"
     )
     user.is_verified = True
@@ -131,7 +131,7 @@ async def user_wrong_company(role_with_edit_user, seed_company_new, seed_applica
 
 @pytest.fixture
 async def user_with_access(role_with_edit_user, seed_company_new, seed_application):
-    user = await create_user(
+    user = await User.create_user(
         email="withaccess", full_name="With Access", position="Dev", password="123"
     )
     user.is_verified = True

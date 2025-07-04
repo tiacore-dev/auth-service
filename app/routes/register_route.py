@@ -8,7 +8,7 @@ from tiacore_lib.pydantic_models.auth_models import (
 from tiacore_lib.utils.verification import send_email
 
 from app.config import get_front_url
-from app.database.models import User, create_user
+from app.database.models import User
 from app.handlers.auth import (
     generate_token,
     verify_jwt_token,
@@ -27,7 +27,7 @@ async def register(
         raise HTTPException(
             status_code=400, detail=f"User with email {data.email} already exists"
         )
-    user = await create_user(
+    user = await User.create_user(
         email=data.email,
         password=data.password,
         full_name=data.full_name,

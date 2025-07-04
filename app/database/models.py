@@ -103,20 +103,6 @@ class RolePermissionRelation(Model):
         table = "role_permission_relations"
 
 
-async def create_user(
-    email: str, password: str, full_name: str, position: str | None = None
-):
-    # Хэшируем пароль
-    hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-    user = await User.create(
-        email=email,
-        password_hash=hashed_password,
-        position=position,
-        full_name=full_name,
-    )
-    return user
-
-
 class User(Model):
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     email = fields.CharField(max_length=255, unique=True)
@@ -129,11 +115,33 @@ class User(Model):
     class Meta:
         table = "users"
 
-    def check_password(self, password: str):
+    def check_password(self, password: str) -> bool:
         if not self.password_hash:
             return False
-
         return bcrypt.checkpw(password.encode(), self.password_hash.encode())
+
+    def update_password(self, password: str) -> None:
+        self.password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+    @classmethod
+    async def create_user(
+        cls,
+        email: str,
+        password: str,
+        full_name: str,
+        position: str | None = None,
+        is_superadmin: bool = False,
+        is_verified: bool = False,
+    ):
+        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+        return await cls.create(
+            email=email,
+            password_hash=hashed_password,
+            full_name=full_name,
+            position=position,
+            is_superadmin=is_superadmin,
+            is_verified=is_verified,
+        )
 
 
 class Company(Model):

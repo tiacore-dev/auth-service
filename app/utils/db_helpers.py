@@ -17,11 +17,11 @@ async def drop_all_tables():
 
 
 async def create_admin_user(settings):
-    from app.database.models import User, create_user
+    from app.database.models import User
 
     admin = await User.filter(email="admin").first()
     if not admin:
-        admin = await create_user(
+        admin = await User.create_user(
             email="admin",
             password=settings.PASSWORD,
             position="admin",

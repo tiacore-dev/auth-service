@@ -14,7 +14,6 @@ from app.database.models import (
     Company,
     User,
     UserCompanyRelation,
-    create_user,
 )
 from app.handlers.auth import (
     create_access_token,
@@ -85,7 +84,7 @@ async def register_with_token(
     token: str = Query(...),
     settings=Depends(get_settings),
 ):
-    user = await create_user(
+    user = await User.create_user(
         email=data.email,
         password=data.password,
         full_name=data.full_name,
