@@ -67,7 +67,7 @@ class ApiToken(Model):
 class Role(Model):
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     name = fields.CharField(max_length=50, unique=True)
-    system_name = fields.CharField(max_length=50, null=True, unique=True)
+    system_name = fields.CharField(max_length=50, null=True)
     comment = fields.TextField(null=True)
     application_id = fields.CharField(max_length=100)
 
