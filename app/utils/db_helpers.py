@@ -1,5 +1,6 @@
 from loguru import logger
 from tortoise import Tortoise
+from tortoise.exceptions import IntegrityError
 from tortoise.transactions import in_transaction
 
 
@@ -36,54 +37,37 @@ async def create_test_data():
     try:
         logger.info("Создание тестовых данных...")
 
-        await Application.get_or_create(
-            id="crm_app", defaults={"name": "CRM application"}
-        )
-        await Application.get_or_create(
-            id="observer_app", defaults={"name": "Observer service"}
-        )
-        await Application.get_or_create(
-            id="auth_app", defaults={"name": "Сервис аутентификации"}
-        )
-        await Application.get_or_create(
-            id="reference_app", defaults={"name": "Сервис справочников"}
-        )
-        await Application.get_or_create(
-            id="contract_app", defaults={"name": "Сервис договоров"}
-        )
-        await Application.get_or_create(
-            id="parcel_app", defaults={"name": "Сервис накладных"}
-        )
+        # Приложения
+        applications = {
+            "crm_app": "CRM application",
+            "observer_app": "Observer service",
+            "auth_app": "Сервис аутентификации",
+            "reference_app": "Сервис справочников",
+            "contract_app": "Сервис договоров",
+            "parcel_app": "Сервис накладных",
+        }
+
+        for app_id, name in applications.items():
+            await Application.get_or_create(id=app_id, defaults={"name": name})
+
         await Company.get_or_create(name="Tiacore")
-        await Role.get_or_create(
-            name="Администратор CRM", application_id="crm_app", system_name="admin"
-        )
-        await Role.get_or_create(
-            name="Администратор Observer",
-            application_id="observer_app",
-            system_name="admin",
-        )
-        await Role.get_or_create(
-            name="Администратор сервиса справочников",
-            application_id="reference_app",
-            system_name="admin",
-        )
-        await Role.get_or_create(
-            name="Администратор севриса контрактов",
-            application_id="contract_app",
-            system_name="admin",
-        )
-        await Role.get_or_create(
-            name="Администратор сервиса аутентификации",
-            application_id="auth_app",
-            system_name="admin",
-        )
-        await Role.get_or_create(
-            name="Администратор сервиса накладных",
-            application_id="parcel_app",
-            system_name="admin",
-        )
+
+        # Роли
+        for app_id in applications.keys():
+            await Role.get_or_create(
+                name=f"Администратор {applications[app_id]}",
+                application_id=app_id,
+                system_name="admin",
+            )
+            await Role.get_or_create(
+                name=f"Пользователь {applications[app_id]}",
+                application_id=app_id,
+                system_name="user",
+            )
+
         logger.info("✅ Тестовые данные успешно созданы.")
+    except IntegrityError as e:
+        logger.error(f"Ошибка целостности данных: {e}")
     except Exception:
         import traceback
 
