@@ -25,7 +25,7 @@ async def reset_password(data: ResetPasswordRequest, settings=Depends(get_settin
     token = generate_token(payload, settings)
     front_url = get_front_url(application_id=data.application_id, settings=settings)
 
-    verification_link = f"{front_url}/reset-password?token={token}&email={data.email}"
+    verification_link = f"{front_url}/reset-password?token={token}"
     body = f"""
     Здравствуйте!
 
