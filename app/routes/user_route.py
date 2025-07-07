@@ -128,41 +128,45 @@ async def get_users(
         query &= Q(email__icontains=search_value)
 
     company_filter = filters.get("company_id")
-    related_user_ids = None
+    related_user_ids = []
+    user_role_map = {}
+
     if context["is_superadmin"]:
         if company_filter:
-            related_user_ids = await UserCompanyRelation.filter(
+            related_user_pairs = await UserCompanyRelation.filter(
                 company_id=company_filter
             ).values_list("user_id", "role_id")
-
-            if related_user_ids:
-                query &= Q(id__in=related_user_ids)
-            else:
+            if not related_user_pairs:
                 return UserListResponseSchema(total=0, users=[])
+            related_user_ids = [uid for uid, _ in related_user_pairs]
+            user_role_map = dict(related_user_pairs)
+            query &= Q(id__in=related_user_ids)
     else:
-        if not filters.get("company_id"):
+        if not company_filter:
             logger.info(
-                f"Нет компании в контексте для пользователя {filters.get('company_id')}"
+                f"Нет компании в контексте для пользователя {context.get('email')}"
             )
             return UserListResponseSchema(total=0, users=[])
 
-        related_user_ids = await UserCompanyRelation.filter(
-            company_id=filters.get("company_id")
+        related_user_pairs = await UserCompanyRelation.filter(
+            company_id=company_filter
         ).values_list("user_id", "role_id")
-
-        if related_user_ids:
-            query &= Q(id__in=related_user_ids)
-        else:
+        if not related_user_pairs:
             return UserListResponseSchema(total=0, users=[])
+        related_user_ids = [uid for uid, _ in related_user_pairs]
+        user_role_map = dict(related_user_pairs)
+        query &= Q(id__in=related_user_ids)
 
+    # Параметры сортировки и пагинации
     order = filters.get("order", "asc")
     sort_by = filters.get("sort_by", "email")
     order_by = f"{'-' if order == 'desc' else ''}{sort_by}"
     page = filters.get("page", 1)
     page_size = filters.get("page_size", 10)
-    role_name_map = None
-    if related_user_ids:
-        user_role_map = {user_id: role_id for user_id, role_id in related_user_ids}
+
+    # Получаем роли по ID
+    role_name_map = {}
+    if user_role_map:
         role_ids = set(user_role_map.values())
         roles = await Role.filter(id__in=role_ids)
         role_name_map = {role.id: role.name for role in roles}
@@ -175,19 +179,21 @@ async def get_users(
         .offset((page - 1) * page_size)
         .limit(page_size)
     )
-    users_data = [
-        UserSchema(
-            user_id=user.id,
-            email=user.email,
-            full_name=user.full_name,
-            position=user.position,
-            is_verified=user.is_verified,
-            role_name=role_name_map.get(user_role_map.get(user.id) or UUID(int=0))
-            if role_name_map
-            else None,
+
+    users_data = []
+    for user in users:
+        role_id = user_role_map.get(user.id)
+        role_name = role_name_map.get(role_id) if role_id else None
+        users_data.append(
+            UserSchema(
+                user_id=user.id,
+                email=user.email,
+                full_name=user.full_name,
+                position=user.position,
+                is_verified=user.is_verified,
+                role_name=role_name,
+            )
         )
-        for user in users
-    ]
 
     return UserListResponseSchema(total=total_count, users=users_data)
 
