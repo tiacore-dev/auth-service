@@ -42,11 +42,9 @@ async def add_user(data: UserCreateSchema = Body(...), _=Depends(require_superad
         logger.debug(f"Пользователь создан: {user.id}")
         if not user:
             logger.error("Не удалось создать пользователя")
-            raise HTTPException(
-                status_code=500, detail="Не удалось создать пользователя"
-            )
+            raise HTTPException(status_code=500, detail="Не удалось создать пользователя")
         logger.success(f"Пользователь {user.email} ({user.id}) успешно создан")
-        role = await Role.get_or_none(system_name="user")
+        role = await Role.get_or_none(system_name="user", application_id=data.application_id)
         company = await Company.get_or_none(id=data.company_id)
         if role and company:
             await UserCompanyRelation.create(
@@ -61,9 +59,7 @@ async def add_user(data: UserCreateSchema = Body(...), _=Depends(require_superad
         raise HTTPException(status_code=400, detail="Некорректные данные") from e
 
 
-@user_router.patch(
-    "/{user_id}", response_model=UserResponseSchema, summary="Изменение пользователя"
-)
+@user_router.patch("/{user_id}", response_model=UserResponseSchema, summary="Изменение пользователя")
 async def edit_user(
     user_id: UUID,
     data: UserEditSchema = Body(...),
@@ -74,9 +70,7 @@ async def edit_user(
     update_data = data.model_dump(exclude_unset=True)
 
     if "password" in update_data:  # Если передан пароль, хешируем его
-        update_data["password_hash"] = bcrypt.hashpw(
-            update_data.pop("password").encode(), bcrypt.gensalt()
-        ).decode()
+        update_data["password_hash"] = bcrypt.hashpw(update_data.pop("password").encode(), bcrypt.gensalt()).decode()
     if "is_verified" in update_data:
         if not context["is_superadmin"]:
             update_data.pop("is_verified")
@@ -105,9 +99,7 @@ async def delete_user(user_id: UUID, _=Depends(get_current_user)):
             logger.warning(f"Пользователь {user_id} не найден")
             raise HTTPException(status_code=404, detail="Пользователь не найден")
         if user.email == "admin":
-            raise HTTPException(
-                status_code=403, detail="вы не можете удалить администратора."
-            )
+            raise HTTPException(status_code=403, detail="вы не можете удалить администратора.")
         await user.delete()
         logger.success(f"Пользователь {user_id} успешно удален")
     except (KeyError, TypeError, ValueError) as e:
@@ -115,9 +107,7 @@ async def delete_user(user_id: UUID, _=Depends(get_current_user)):
         raise HTTPException(status_code=400, detail="Некорректные данные") from e
 
 
-@user_router.get(
-    "/all", response_model=UserListResponseSchema, summary="Просмотр пользователей"
-)
+@user_router.get("/all", response_model=UserListResponseSchema, summary="Просмотр пользователей")
 async def get_users(
     filters: dict = Depends(user_filter_params),
     context=Depends(get_current_user),
@@ -133,9 +123,7 @@ async def get_users(
 
     if context["is_superadmin"]:
         if company_filter:
-            related_user_pairs = await UserCompanyRelation.filter(
-                company_id=company_filter
-            ).values_list("user_id", "role_id")
+            related_user_pairs = await UserCompanyRelation.filter(company_id=company_filter).values_list("user_id", "role_id")
             if not related_user_pairs:
                 return UserListResponseSchema(total=0, users=[])
             related_user_ids = [uid for uid, _ in related_user_pairs]
@@ -143,14 +131,10 @@ async def get_users(
             query &= Q(id__in=related_user_ids)
     else:
         if not company_filter:
-            logger.info(
-                f"Нет компании в контексте для пользователя {context.get('email')}"
-            )
+            logger.info(f"Нет компании в контексте для пользователя {context.get('email')}")
             return UserListResponseSchema(total=0, users=[])
 
-        related_user_pairs = await UserCompanyRelation.filter(
-            company_id=company_filter
-        ).values_list("user_id", "role_id")
+        related_user_pairs = await UserCompanyRelation.filter(company_id=company_filter).values_list("user_id", "role_id")
         if not related_user_pairs:
             return UserListResponseSchema(total=0, users=[])
         related_user_ids = [uid for uid, _ in related_user_pairs]
@@ -173,12 +157,7 @@ async def get_users(
 
     total_count = await User.filter(query).count()
 
-    users = (
-        await User.filter(query)
-        .order_by(order_by)
-        .offset((page - 1) * page_size)
-        .limit(page_size)
-    )
+    users = await User.filter(query).order_by(order_by).offset((page - 1) * page_size).limit(page_size)
 
     users_data = []
     for user in users:
@@ -198,13 +177,9 @@ async def get_users(
     return UserListResponseSchema(total=total_count, users=users_data)
 
 
-@user_router.get(
-    "/{user_id}", response_model=UserSchema, summary="Просмотр пользователя"
-)
+@user_router.get("/{user_id}", response_model=UserSchema, summary="Просмотр пользователя")
 async def get_user(
-    user_id: UUID = Path(
-        ..., title="ID пользователя", description="ID просматриваемого пользователя"
-    ),
+    user_id: UUID = Path(..., title="ID пользователя", description="ID просматриваемого пользователя"),
     _: dict = Depends(get_current_user),
 ):
     logger.info(f"Получен запрос на просмотр пользователя: {user_id}")
