@@ -23,32 +23,26 @@ async def permission_view_user():
 
 @pytest.fixture
 async def seed_application():
-    return await Application.create(
-        id="auth_app", name="Test App", system_name="test_app"
-    )
+    return await Application.create(id="auth_app", name="Test App")
 
 
 @pytest.fixture
 async def role_with_edit_user(permission_edit_user):
-    role = await Role.create(
-        name="editor", system_name="admin", application_id="test_app"
-    )
+    role = await Role.create(name="editor", system_name="admin", application_id="auth_app")
     await RolePermissionRelation.create(role=role, permission=permission_edit_user)
     return role
 
 
 @pytest.fixture
 async def other_role(permission_view_user):
-    role = await Role.create(name="no_permission", application_id="test_app")
+    role = await Role.create(name="no_permission", application_id="auth_app")
     await RolePermissionRelation.create(role=role, permission=permission_view_user)
     return role
 
 
 @pytest.fixture
 async def user_role():
-    role = await Role.create(
-        name="Пользователь", system_name="user", application_id="test_app"
-    )
+    role = await Role.create(name="Пользователь", system_name="user", application_id="auth_app")
     return role
 
 
@@ -64,9 +58,7 @@ async def other_company():
 
 @pytest.fixture
 async def seed_other_user(seed_company_new, other_role, seed_application):
-    user = await User.create_user(
-        email="Test User", password="123", full_name="User", position="user"
-    )
+    user = await User.create_user(email="Test User", password="123", full_name="User", position="user")
     user.is_verified = True
     await user.save()
     await UserCompanyRelation.create(
@@ -80,22 +72,16 @@ async def seed_other_user(seed_company_new, other_role, seed_application):
 
 @pytest.fixture
 async def seed_other_user_wrong(other_company, other_role, seed_application):
-    user = await User.create_user(
-        email="Test User", password="123", full_name="User", position="user"
-    )
+    user = await User.create_user(email="Test User", password="123", full_name="User", position="user")
     user.is_verified = True
     await user.save()
-    await UserCompanyRelation.create(
-        user=user, company=other_company, role=other_role, application=seed_application
-    )
+    await UserCompanyRelation.create(user=user, company=other_company, role=other_role, application=seed_application)
     return user
 
 
 @pytest.fixture
 async def user_no_permission(seed_company_new, other_role, seed_application):
-    user = await User.create_user(
-        email="noperm", full_name="No Perm", position="Dev", password="123"
-    )
+    user = await User.create_user(email="noperm", full_name="No Perm", position="Dev", password="123")
     user.is_verified = True
     await user.save()
     await UserCompanyRelation.create(
@@ -112,9 +98,7 @@ async def user_no_permission(seed_company_new, other_role, seed_application):
 
 @pytest.fixture
 async def user_wrong_company(role_with_edit_user, seed_company_new, seed_application):
-    user = await User.create_user(
-        email="wrongco", full_name="Wrong Co", position="Dev", password="123"
-    )
+    user = await User.create_user(email="wrongco", full_name="Wrong Co", position="Dev", password="123")
     user.is_verified = True
     await user.save()
     await UserCompanyRelation.create(
@@ -131,9 +115,7 @@ async def user_wrong_company(role_with_edit_user, seed_company_new, seed_applica
 
 @pytest.fixture
 async def user_with_access(role_with_edit_user, seed_company_new, seed_application):
-    user = await User.create_user(
-        email="withaccess", full_name="With Access", position="Dev", password="123"
-    )
+    user = await User.create_user(email="withaccess", full_name="With Access", position="Dev", password="123")
     user.is_verified = True
     await user.save()
     await UserCompanyRelation.create(
