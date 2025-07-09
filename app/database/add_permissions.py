@@ -1,31 +1,29 @@
-from app.database.models import Permission
-
 permissions = [
     # Legal Entity Company Relations
     (
         "add_legal_entity_company_relation",
         "Добавление legal_entity_company_relation",
-        "reference_app, crm_app",
+        "reference_app, crm_app, contract_app",
     ),
     (
         "edit_legal_entity_company_relation",
         "Редкатирование legal_entity_company_relation",
-        "reference_app, crm_app",
+        "reference_app, crm_app, contract_app",
     ),
     (
         "delete_legal_entity_company_relation",
         "Удаление legal_entity_company_relation",
-        "reference_app, crm_app",
+        "reference_app, crm_app, contract_app",
     ),
     (
         "view_legal_entity_company_relation",
         "Просмотр legal_entity_company_relation",
-        "reference_app, crm_app",
+        "reference_app, crm_app, contract_app",
     ),
     (
         "get_all_legal_entity_company_relations",
         "Просмотр всех legal_entity_company_relationов",
-        "reference_app, crm_app",
+        "reference_app, crm_app, contract_app",
     ),
     # User Company Relations
     ("add_user_company_relation", "Добавление user_company_relation", "all"),
@@ -73,39 +71,39 @@ permissions = [
     ("get_all_contracts", "Просмотр всех договоров", "contract_app, crm_app"),
     ("download_contract", "Скачивание договора", "contract_app, crm_app"),
     # Legal Entities
-    ("add_legal_entity", "Добавление юридического лица", "reference_app, crm_app"),
-    ("edit_legal_entity", "Редактирование юридического лица", "reference_app, crm_app"),
+    ("add_legal_entity", "Добавление юридического лица", "reference_app, crm_app, contract_app"),
+    ("edit_legal_entity", "Редактирование юридического лица", "reference_app, crm_app, contract_app"),
     (
         "add_legal_entity_by_inn",
         "Добавление юр. лица по инн и кпп",
-        "reference_app, crm_app",
+        "reference_app, crm_app, contract_app",
     ),
-    ("delete_legal_entity", "Удаление юридического лица", "reference_app, crm_app"),
-    ("view_legal_entity", "Просмотр юридического лица", "reference_app, crm_app"),
+    ("delete_legal_entity", "Удаление юридического лица", "reference_app, crm_app, contract_app"),
+    ("view_legal_entity", "Просмотр юридического лица", "reference_app, crm_app, contract_app"),
     (
         "get_all_legal_entities",
         "Просмотр всех юридических лиц",
-        "reference_app, crm_app",
+        "reference_app, crm_app, contract_app",
     ),
     (
         "get_sellers",
         "Просмотр всех юридических лиц типа seller компании",
-        "reference_app, crm_app",
+        "reference_app, crm_app, contract_app",
     ),
     (
         "get_buyers",
         "Просмотр всех юридических лиц типа buyer компании",
-        "reference_app, crm_app",
+        "reference_app, crm_app, contract_app",
     ),
     (
         "get_by_company",
         "Просмотр всех юридических лиц по компании",
-        "reference_app, crm_app",
+        "reference_app, crm_app, contract_app",
     ),
     (
         "get_legal_entity_by_inn_kpp",
         "Получение юр. лиц по инн, кпп",
-        "reference_app, crm_app",
+        "reference_app, crm_app, contract_app",
     ),
     # Bills
     ("add_bill", "Добавление счёта", "crm_app"),
@@ -284,17 +282,17 @@ permissions = [
 
 
 async def add_initial_permissions():
+    from app.database.models import Permission
+
     for permission in permissions:
         permission_id = permission[0]
         permission_name = permission[1]
-        permission_comment = (
-            permission[2] if len(permission) > 2 else None
-        )  # если хочешь использовать
+        permission_comment = permission[2] if len(permission) > 2 else None
 
         try:
-            await Permission.get_or_create(
-                id=permission_id,
+            obj, _ = await Permission.update_or_create(
                 defaults={"name": permission_name, "comment": permission_comment},
+                id=permission_id,
             )
         except Exception as e:
-            print(f"Ошибка при создании {permission_id}: {e}")
+            print(f"Ошибка при создании/обновлении {permission_id}: {e}")
