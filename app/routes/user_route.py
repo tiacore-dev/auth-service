@@ -44,15 +44,16 @@ async def add_user(data: UserCreateSchema = Body(...), _=Depends(require_superad
             logger.error("Не удалось создать пользователя")
             raise HTTPException(status_code=500, detail="Не удалось создать пользователя")
         logger.success(f"Пользователь {user.email} ({user.id}) успешно создан")
-        role = await Role.get_or_none(system_name="user", application_id=data.application_id)
-        company = await Company.get_or_none(id=data.company_id)
-        if role and company:
-            await UserCompanyRelation.create(
-                user=user,
-                company=company,
-                role=role,
-                application_id=data.application_id,
-            )
+        if data.company_id and data.application_id:
+            role = await Role.get_or_none(system_name="user", application_id=data.application_id)
+            company = await Company.get_or_none(id=data.company_id)
+            if role and company:
+                await UserCompanyRelation.create(
+                    user=user,
+                    company=company,
+                    role=role,
+                    application_id=data.application_id,
+                )
         return {"user_id": str(user.id)}
     except (KeyError, TypeError, ValueError) as e:
         logger.warning(f"Ошибка данных: {e}")
