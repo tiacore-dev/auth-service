@@ -124,7 +124,9 @@ async def get_users(
 
     if context["is_superadmin"]:
         if company_filter:
-            related_user_pairs = await UserCompanyRelation.filter(company_id=company_filter).values_list("user_id", "role_id")
+            related_user_pairs = await UserCompanyRelation.filter(company_id=company_filter).values_list(
+                "user_id", "role_id"
+            )
             if not related_user_pairs:
                 return UserListResponseSchema(total=0, users=[])
             related_user_ids = [uid for uid, _ in related_user_pairs]
@@ -135,7 +137,9 @@ async def get_users(
             logger.info(f"Нет компании в контексте для пользователя {context.get('email')}")
             return UserListResponseSchema(total=0, users=[])
 
-        related_user_pairs = await UserCompanyRelation.filter(company_id=company_filter).values_list("user_id", "role_id")
+        related_user_pairs = await UserCompanyRelation.filter(company_id=company_filter).values_list(
+            "user_id", "role_id"
+        )
         if not related_user_pairs:
             return UserListResponseSchema(total=0, users=[])
         related_user_ids = [uid for uid, _ in related_user_pairs]

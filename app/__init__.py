@@ -11,7 +11,7 @@ from app.config import TestConfig, _load_settings
 from app.database.add_permissions import add_initial_permissions
 from app.logger import setup_logger
 from app.routes import register_routes
-from app.utils.db_helpers import create_admin_user, create_test_data
+from app.utils.db_helpers import create_test_data
 
 
 def provide_settings(config_name: ConfigName):
@@ -36,7 +36,7 @@ def create_app(config_name: ConfigName) -> FastAPI:
             Tortoise.init_models(["app.database.models"], "models")
 
             await add_initial_permissions()
-            await create_admin_user(settings)
+            # await create_admin_user(settings)
             await create_test_data()
 
             app.state.publisher = EventPublisher(settings.AUTH_BROKER_URL)
