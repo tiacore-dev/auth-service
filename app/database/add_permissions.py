@@ -278,6 +278,56 @@ permissions = [
         "Просмотр всех деталей отправлений",
         "parcel_app",
     ),
+    # Price categories
+    ("add_price_category", "Добавление категории цен", "price_app"),
+    ("edit_price_category", "Редактирование категории цен", "price_app"),
+    ("delete_price_category", "Удаление категории цен", "price_app"),
+    ("view_price_category", "Просмотр категории цен", "price_app"),
+    (
+        "get_all_price_categories",
+        "Просмотр всех категорий цен",
+        "price_app",
+    ),
+    # Price categories
+    ("add_price", "Добавление цены", "price_app"),
+    ("edit_price", "Редактирование цены", "price_app"),
+    ("delete_price", "Удаление цены", "price_app"),
+    ("view_price", "Просмотр цены", "price_app"),
+    (
+        "get_all_prices",
+        "Просмотр всех цен",
+        "price_app",
+    ),
+    # Price details
+    ("add_price_detail", "Добавление детали цены", "price_app"),
+    ("edit_price_detail", "Редактирование детали цены", "price_app"),
+    ("delete_price_detail", "Удаление детали цены", "price_app"),
+    ("view_price_detail", "Просмотр детали цены", "price_app"),
+    (
+        "get_all_price_details",
+        "Просмотр всех деталей цен",
+        "price_app",
+    ),
+    # Price sets
+    ("add_price_set", "Добавление набора цен", "price_app"),
+    ("edit_price_set", "Редактирование набора цен", "price_app"),
+    ("delete_price_set", "Удаление набора цен", "price_app"),
+    ("view_price_set", "Просмотр набора цен", "price_app"),
+    (
+        "get_all_price_sets",
+        "Просмотр всех наборов цен",
+        "price_app",
+    ),
+    # Price sets
+    ("add_price_set_relation", "Добавление отношеня цена набор", "price_app"),
+    ("edit_price_set_relation", "Редактирование отношеня цена набор", "price_app"),
+    ("delete_price_set_relation", "Удаление отношеня цена набор", "price_app"),
+    ("view_price_set_relation", "Просмотр отношеня цена набор", "price_app"),
+    (
+        "get_all_price_set_relations",
+        "Просмотр всех отношений цена набор",
+        "price_app",
+    ),
 ]
 
 

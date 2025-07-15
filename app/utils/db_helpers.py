@@ -43,6 +43,7 @@ async def create_test_data():
             "reference_app": "Сервис справочников",
             "contract_app": "Сервис договоров",
             "parcel_app": "Сервис накладных",
+            "price_app": "Сервис тарифов",
         }
 
         for app_id, name in applications.items():
