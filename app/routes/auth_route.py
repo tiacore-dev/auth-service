@@ -52,9 +52,7 @@ async def login(data: LoginRequest, request: Request, settings=Depends(get_setti
         return JSONResponse(status_code=500, content={"detail": str(e)})
 
 
-@auth_router.post(
-    "/refresh", response_model=TokenResponse, summary="Обновление Access Token"
-)
+@auth_router.post("/refresh", response_model=TokenResponse, summary="Обновление Access Token")
 async def refresh_access_token(data: RefreshRequest, settings=Depends(get_settings)):
     try:
         logger.debug("Запрос на рефреш токена")
@@ -82,30 +80,17 @@ async def refresh_access_token(data: RefreshRequest, settings=Depends(get_settin
         )
 
     except JWTError as exc:
-        raise HTTPException(
-            status_code=401, detail="Неверный или просроченный токен"
-        ) from exc
+        raise HTTPException(status_code=401, detail="Неверный или просроченный токен") from exc
 
 
-@auth_router.get(
-    "/me", response_model=MEResponse, summary="Получение инфы о пользователе"
-)
-async def give_user_data(
-    application_id: str = Query(...), token_data=Depends(get_current_user)
-):
+@auth_router.get("/me", response_model=MEResponse, summary="Получение инфы о пользователе")
+async def give_user_data(application_id: str = Query(...), token_data=Depends(get_current_user)):
     user = await User.get_or_none(id=token_data["user_id"])
     if not user:
         raise HTTPException(status_code=400, detail="Invalid token data")
-    relations = (
-        await UserCompanyRelation.filter(user=user)
-        .prefetch_related("company", "role")
-        .all()
-    )
+    relations = await UserCompanyRelation.filter(user=user).prefetch_related("company", "role").all()
     relation_list = [
-        UserCompanyRelationOut(
-            id=str(r.id), company_id=str(r.company.id), role=r.role.name
-        )
-        for r in relations
+        UserCompanyRelationOut(id=str(r.id), company_id=str(r.company.id), role=r.role.name) for r in relations
     ]
 
     company_list = [relation.company.id for relation in relations]
