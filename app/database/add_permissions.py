@@ -214,6 +214,7 @@ permissions = [
     ("get_all_parcel_statuses", "Просмотр всех статусов накладных", "parcel_app"),
     # Arrival to warehouse
     ("add_arrival", "Добавление прибытия", "parcel_app"),
+    ("add_arrival_bulk", "Добавление прибытия с накладными", "parcel_app"),
     ("edit_arrival", "Редактирование прибытия", "parcel_app"),
     ("delete_arrival", "Удаление прибытия", "parcel_app"),
     ("view_arrival", "Просмотр прибытия", "parcel_app"),
@@ -236,6 +237,7 @@ permissions = [
     ),
     # Issue to employee
     ("add_issue", "Добавление передачи курьеру", "parcel_app"),
+    ("add_issue_bulk", "Добавление передачи курьеру с накладными", "parcel_app"),
     ("edit_issue", "Редактирование передачи курьеру", "parcel_app"),
     ("delete_issue", "Удаление передачи курьеру", "parcel_app"),
     ("view_issue", "Просмотр передачи курьеру", "parcel_app"),
@@ -266,6 +268,7 @@ permissions = [
     ),
     # Return to sender
     ("add_return", "Добавление возврата отправителю", "parcel_app"),
+    ("add_return_bulk", "Добавление возврата с накладными", "parcel_app"),
     ("edit_return", "Редактирование возврата отправителю", "parcel_app"),
     ("delete_return", "Удаление возврата отправителю", "parcel_app"),
     ("view_return", "Просмотр возврата отправителю", "parcel_app"),
@@ -274,7 +277,7 @@ permissions = [
         "Просмотр всех возвратов отправителю",
         "parcel_app",
     ),
-    # Return detailsr
+    # Return details
     ("add_return_details", "Добавление детали возврата отправителю", "parcel_app"),
     ("edit_return_details", "Редактирование детали возврата отправителю", "parcel_app"),
     ("delete_return_details", "Удаление детали возврата отправителю", "parcel_app"),
@@ -286,6 +289,7 @@ permissions = [
     ),
     # Transit
     ("add_transit", "Добавление отправления", "parcel_app"),
+    ("add_transit_bulk", "Добавление отправления с накладными", "parcel_app"),
     ("edit_transit", "Редактирование отправления", "parcel_app"),
     ("delete_transit", "Удаление отправления", "parcel_app"),
     ("view_transit", "Просмотр отправления", "parcel_app"),
