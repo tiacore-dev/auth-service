@@ -141,12 +141,14 @@ permissions = [
     ("view_webhook_info", "Просмотр информации о вебхуке", "observer_app"),
     # Bots:
     ("add_bot", "Добавление бота", "observer_app"),
+    ("edit_bot", "Редактирование бота", "observer_app"),
     ("delete_bot", "Удаление бота", "observer_app"),
     ("view_bot", "Просмотр бота", "observer_app"),
     ("get_all_bots", "Просмотр всех ботов", "observer_app"),
     # Get:
     ("get_all_chats", "Просмотр всех чатов", "observer_app"),
     ("get_all_accounts", "Просмотр всех тг аккаунтов", "observer_app"),
+    ("edit_accounts", "редактирование аккаунта", "observer_app"),
     # Prompts
     ("add_prompt", "Добавление промпта", "observer_app"),
     ("edit_prompt", "Редактирование промпта", "observer_app"),

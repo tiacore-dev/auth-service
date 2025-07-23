@@ -44,12 +44,8 @@ class Application(Model):
 
 class ApiToken(Model):
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
-    user = fields.ForeignKeyField(
-        "models.User", related_name="api_tokens", on_delete=fields.CASCADE
-    )
-    application = fields.ForeignKeyField(
-        "models.Application", related_name="api_tokens", on_delete=fields.CASCADE
-    )
+    user = fields.ForeignKeyField("models.User", related_name="api_tokens", on_delete=fields.CASCADE)
+    application = fields.ForeignKeyField("models.Application", related_name="api_tokens", on_delete=fields.CASCADE)
     token_hash = fields.CharField(max_length=255)
     created_at = fields.DatetimeField(auto_now_add=True)
     expires_at = fields.DatetimeField(null=True)
@@ -160,12 +156,8 @@ class UserCompanyRelation(Model):
         related_name="user_company_relations",
         on_delete=fields.CASCADE,
     )
-    user = fields.ForeignKeyField(
-        "models.User", related_name="user_company_relations", on_delete=fields.CASCADE
-    )
-    role = fields.ForeignKeyField(
-        "models.Role", related_name="user_company_relations", on_delete=fields.CASCADE
-    )
+    user = fields.ForeignKeyField("models.User", related_name="user_company_relations", on_delete=fields.CASCADE)
+    role = fields.ForeignKeyField("models.Role", related_name="user_company_relations", on_delete=fields.CASCADE)
     application = fields.ForeignKeyField(
         "models.Application",
         related_name="roles",
