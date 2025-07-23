@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
-from app.database.models import Application
+from app.database.models import Application, User
 
 # @pytest.mark.usefixtures("seed_other_user")
 # @pytest.mark.asyncio
@@ -22,9 +22,7 @@ from app.database.models import Application
 
 
 @pytest.mark.asyncio
-async def test_refresh_token_success(
-    test_app: AsyncClient, jwt_token_admin, seed_application: Application
-):
+async def test_refresh_token_success(test_app: AsyncClient, jwt_token_admin, seed_application: Application):
     """Проверяем, что refresh-токен можно обменять на новый access-токен."""
     response = await test_app.post(
         "/api/auth/refresh",
@@ -41,19 +39,19 @@ async def test_refresh_token_success(
 
 
 @pytest.mark.asyncio
-async def test_login_failure(test_app: AsyncClient, seed_application: Application):
+async def test_login_failure(test_app: AsyncClient, seed_application: Application, seed_user: User):
     """Проверяем неудачную аутентификацию с неправильным паролем."""
     response = await test_app.post(
         "/api/auth/login",
         json={
-            "email": "test_user",
+            "email": seed_user.email,
             "password": "wrongpassword",
             "application_id": seed_application.id,
         },
     )
 
     assert response.status_code == 401
-    assert response.json()["detail"] == "Неверные учетные данные"
+    assert response.json()["detail"] == f"Неверный пароль для пользователя '{seed_user.email}'"
 
 
 @pytest.mark.asyncio
