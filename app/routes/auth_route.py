@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from fastapi.responses import JSONResponse
 from jose import JWTError
 from loguru import logger
 from tiacore_lib.config import get_settings
@@ -34,22 +33,19 @@ async def login(data: LoginRequest, request: Request, settings=Depends(get_setti
     result = await login_handler(data.email, data.password)
     if not result:
         raise HTTPException(status_code=401, detail="Неверные учетные данные")
-    try:
-        user, company_permissions = result
-        logger.debug(f"Полученные разрешения: {company_permissions}")
-        event = await build_user_event(user, event_type=EventType.USER_LOGGED_IN)
-        await request.app.state.publisher.publish_event(event)
 
-        return TokenResponse(
-            access_token=create_access_token({"sub": user.email}, settings),
-            refresh_token=create_refresh_token({"sub": user.email}, settings),
-            permissions=None if user.is_superadmin else company_permissions,
-            is_superadmin=user.is_superadmin,
-            user_id=user.id,
-        )
-    except Exception as e:
-        logger.exception("🔥 Ошибка при авторизации")
-        return JSONResponse(status_code=500, content={"detail": str(e)})
+    user, company_permissions = result
+    logger.debug(f"Полученные разрешения: {company_permissions}")
+    event = await build_user_event(user, event_type=EventType.USER_LOGGED_IN)
+    await request.app.state.publisher.publish_event(event)
+
+    return TokenResponse(
+        access_token=create_access_token({"sub": user.email}, settings),
+        refresh_token=create_refresh_token({"sub": user.email}, settings),
+        permissions=None if user.is_superadmin else company_permissions,
+        is_superadmin=user.is_superadmin,
+        user_id=user.id,
+    )
 
 
 @auth_router.post("/refresh", response_model=TokenResponse, summary="Обновление Access Token")
