@@ -8,11 +8,7 @@ from app.utils.permissions_get import get_company_permissions_for_user
 
 
 async def build_user_event(user: User, event_type: EventType) -> UserEvent:
-    relations = (
-        await UserCompanyRelation.filter(user=user)
-        .prefetch_related("company", "role")
-        .all()
-    )
+    relations = await UserCompanyRelation.filter(user=user).prefetch_related("company", "role").all()
     relation_list = [
         UserCompanyRelationOut(
             id=str(r.id),

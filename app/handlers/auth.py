@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from uuid import uuid4
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials
@@ -31,20 +32,24 @@ def verify_jwt_token(token: str, settings) -> dict:
         raise HTTPException(status_code=401, detail="Invalid or expired token") from e
 
 
-def create_access_token(data: dict, settings, expires_delta=None):
+def create_access_token(data: dict, settings, type, expires_delta=None):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire})
+    to_encode.update(
+        {
+            "exp": expire,
+            "jti": str(uuid4()),
+            "type": type,
+            "iat": int(datetime.now(timezone.utc).timestamp()),
+        }
+    )
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
 
-# Проверка токена
-
-
-def create_refresh_token(data: dict, settings):
+def create_refresh_token(data: dict, settings, type):
     expires = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-    return create_access_token(data, settings=settings, expires_delta=expires)
+    return create_access_token(data, settings, type, expires_delta=expires)
 
 
 async def get_current_user(
@@ -65,6 +70,7 @@ async def verify_token(token: str, settings) -> dict:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         email = payload.get("sub")
+        jti = payload.get("jti")
         if email is None:
             logger.warning("❌ Токен не содержит 'sub'. Отказ в доступе.")
             raise HTTPException(status_code=401, detail="Invalid token")
@@ -79,6 +85,7 @@ async def verify_token(token: str, settings) -> dict:
             "permissions": permissions,
             "is_superadmin": user.is_superadmin,
             "user_id": str(user.id),
+            "jti": jti,
         }
 
         return token_data

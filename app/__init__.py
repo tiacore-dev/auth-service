@@ -1,7 +1,10 @@
 from contextlib import asynccontextmanager
 
+import redis.asyncio as redis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
 from prometheus_client import make_asgi_app
 from tiacore_lib.config import ConfigName, get_settings
 from tiacore_lib.rabbit.publisher import EventPublisher
@@ -38,6 +41,9 @@ def create_app(config_name: ConfigName) -> FastAPI:
             await add_initial_permissions()
             # await create_admin_user(settings)
             await create_test_data()
+            redis_url = settings.REDIS_URL
+            redis_client = redis.from_url(redis_url)
+            FastAPICache.init(RedisBackend(redis_client), prefix="fastapi-cache")
 
             app.state.publisher = EventPublisher(settings.AUTH_BROKER_URL)
             await app.state.publisher.connect()

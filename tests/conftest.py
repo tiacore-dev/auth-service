@@ -57,9 +57,7 @@ pytest_plugins = [
 @pytest.mark.asyncio
 async def seed_user():
     """Добавляет тестового пользователя в базу перед тестом."""
-    user = await User.create_user(
-        email="test_user", password="qweasdzcx", position="user", full_name="Test User"
-    )
+    user = await User.create_user(email="test_user", password="qweasdzcx", position="user", full_name="Test User")
     user.is_verified = True
     await user.save()
     return user
@@ -91,23 +89,21 @@ async def jwt_token_user(seed_user: User, seed_application: Application, test_se
         "application_id": str(seed_application.id),
     }
     return {
-        "access_token": create_access_token(token_data, test_settings),
-        "refresh_token": create_refresh_token(token_data, test_settings),
+        "access_token": create_access_token(token_data, test_settings, "access"),
+        "refresh_token": create_refresh_token(token_data, test_settings, "refresh"),
     }
 
 
 @pytest.fixture(scope="function")
 @pytest.mark.asyncio
-async def jwt_token_admin(
-    seed_admin: User, seed_application: Application, test_settings
-):
+async def jwt_token_admin(seed_admin: User, seed_application: Application, test_settings):
     """Генерирует JWT токен для администратора."""
     token_data = {
         "sub": seed_admin.email,
     }
     return {
-        "access_token": create_access_token(token_data, test_settings),
-        "refresh_token": create_refresh_token(token_data, test_settings),
+        "access_token": create_access_token(token_data, test_settings, "access"),
+        "refresh_token": create_refresh_token(token_data, test_settings, "refresh"),
     }
 
 
@@ -123,6 +119,7 @@ def get_token_for_user(test_settings):
                 "sub": user_obj.email,
             },
             test_settings,
+            "access",
         )
 
     return _get_token

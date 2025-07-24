@@ -19,6 +19,7 @@ from app.handlers.auth import (
     login_handler,
     verify_token,
 )
+from app.handlers.cache_handler import blacklist_token
 from app.utils.event_builder import build_user_event
 from app.utils.permissions_get import (
     get_company_permissions_by_application,
@@ -40,8 +41,8 @@ async def login(data: LoginRequest, request: Request, settings=Depends(get_setti
     await request.app.state.publisher.publish_event(event)
 
     return TokenResponse(
-        access_token=create_access_token({"sub": user.email}, settings),
-        refresh_token=create_refresh_token({"sub": user.email}, settings),
+        access_token=create_access_token({"sub": user.email}, settings, type="access"),
+        refresh_token=create_refresh_token({"sub": user.email}, settings, type="refresh"),
         permissions=None if user.is_superadmin else company_permissions,
         is_superadmin=user.is_superadmin,
         user_id=user.id,
@@ -68,8 +69,8 @@ async def refresh_access_token(data: RefreshRequest, settings=Depends(get_settin
         logger.debug(f"🧪 permissions: {company_permissions}")
 
         return TokenResponse(
-            access_token=create_access_token({"sub": email}, settings),
-            refresh_token=create_refresh_token({"sub": email}, settings),
+            access_token=create_access_token({"sub": user.email}, settings, type="access"),
+            refresh_token=create_refresh_token({"sub": user.email}, settings, type="refresh"),
             permissions=None if user.is_superadmin else company_permissions,
             is_superadmin=user.is_superadmin,
             user_id=user.id,
@@ -116,4 +117,5 @@ async def logout(
         event=EventType.USER_LOGGED_OUT,
         email=token_data["email"],
     )
+    await blacklist_token(token_data["jti"])
     await request.app.state.publisher.publish_event(event)

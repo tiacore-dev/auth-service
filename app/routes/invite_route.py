@@ -28,9 +28,7 @@ invite_router = APIRouter()
 
 
 @invite_router.post("/invite", status_code=201)
-async def invite_user(
-    data: InviteRequest, _=Depends(get_current_user), settings=Depends(get_settings)
-):
+async def invite_user(data: InviteRequest, _=Depends(get_current_user), settings=Depends(get_settings)):
     payload = {
         "sub": data.email,
         "company_id": str(data.company_id),
@@ -40,9 +38,7 @@ async def invite_user(
     token = generate_token(payload, settings)
     application = await Application.get_or_none(id=data.application_id)
     if not application:
-        raise HTTPException(
-            status_code=400, detail="Попытка пригласить в несуществующее приложение"
-        )
+        raise HTTPException(status_code=400, detail="Попытка пригласить в несуществующее приложение")
     existing_user = await User.get_or_none(email=data.email)
     front_url = get_front_url(application_id=application.id, settings=settings)
     if existing_user:
@@ -76,9 +72,7 @@ async def invite_user(
     return
 
 
-@invite_router.post(
-    "/register-with-token", response_model=TokenResponse, status_code=201
-)
+@invite_router.post("/register-with-token", response_model=TokenResponse, status_code=201)
 async def register_with_token(
     data: RegisterRequest,
     token: str = Query(...),
@@ -113,11 +107,9 @@ async def register_with_token(
             application_id=application_id,
         )
     return TokenResponse(
-        access_token=create_access_token({"sub": user.email}, settings),
-        refresh_token=create_refresh_token({"sub": user.email}, settings),
-        permissions=None
-        if user.is_superadmin
-        else await get_company_permissions_for_user(user),
+        access_token=create_access_token({"sub": user.email}, settings, type="access"),
+        refresh_token=create_refresh_token({"sub": user.email}, settings, type="refresh"),
+        permissions=None if user.is_superadmin else await get_company_permissions_for_user(user),
         is_superadmin=user.is_superadmin,
         user_id=user.id,
     )
