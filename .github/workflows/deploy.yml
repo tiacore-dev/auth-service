@@ -77,7 +77,9 @@ jobs:
           context: .
           push: true
           target: prod
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:${{ github.sha }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:latest
           build-args: |
             LIB_REPO_TOKEN=${{ secrets.TOKEN_SHARED_LIB }}
             CACHE_BUSTER=${{ env.CACHE_BUSTER }}
