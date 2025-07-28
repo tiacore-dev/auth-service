@@ -211,6 +211,12 @@ permissions = [
     ("delete_parcel_cargo", "Удаление груза накладной", "parcel_app"),
     ("view_parcel_cargo", "Просмотр груза накладной", "parcel_app"),
     ("get_all_parcel_cargo", "Просмотр всех грузов накладных", "parcel_app"),
+    # Cargo type
+    ("add_cargo_type", "Добавление типа груза", "parcel_app"),
+    ("edit_cargo_type", "Редактирование типа груза", "parcel_app"),
+    ("delete_cargo_type", "Удаление типа груза", "parcel_app"),
+    ("view_cargo_type", "Просмотр типа груза", "parcel_app"),
+    ("get_all_cargo_types", "Просмотр всех типов грузов", "parcel_app"),
     # Parcel status
     ("view_parcel_status", "Просмотр статуса накладной", "parcel_app"),
     ("get_all_parcel_statuses", "Просмотр всех статусов накладных", "parcel_app"),

@@ -10,18 +10,16 @@ async def get_company_permissions_for_user(
     if user.is_superadmin:
         return None
 
-    relations = await UserCompanyRelation.filter(user=user).select_related(
-        "company", "role", "application"
-    )
+    relations = await UserCompanyRelation.filter(user=user).select_related("company", "role", "application")
     if not relations:
         return {}
 
     role_ids = {rel.role.id for rel in relations}
     role_id_to_name = {str(rel.role.id): rel.role.name for rel in relations}
 
-    role_permissions = await RolePermissionRelation.filter(
-        role_id__in=role_ids
-    ).select_related("permission", "role", "restriction")
+    role_permissions = await RolePermissionRelation.filter(role_id__in=role_ids).select_related(
+        "permission", "role", "restriction"
+    )
 
     # role_id → List[permission.id]
     role_perm_map = defaultdict(list)
@@ -47,9 +45,9 @@ async def get_company_permissions_by_application(
     if user.is_superadmin:
         return None
 
-    relations = await UserCompanyRelation.filter(
-        user=user, application_id=application_id
-    ).select_related("company", "role", "application")
+    relations = await UserCompanyRelation.filter(user=user, application_id=application_id).select_related(
+        "company", "role", "application"
+    )
 
     if not relations:
         return {}
@@ -57,9 +55,9 @@ async def get_company_permissions_by_application(
     role_ids = {rel.role.id for rel in relations}
     role_id_to_name = {str(rel.role.id): rel.role.name for rel in relations}
 
-    role_permissions = await RolePermissionRelation.filter(
-        role_id__in=role_ids
-    ).select_related("permission", "role", "restriction")
+    role_permissions = await RolePermissionRelation.filter(role_id__in=role_ids).select_related(
+        "permission", "role", "restriction"
+    )
 
     role_perm_map = defaultdict(list)
     for rp in role_permissions:
