@@ -4,7 +4,12 @@ from datetime import date
 
 import pytest
 
-from app.database.models import CompanySubscription, Subscription, SubscriptionDetails, SubscriptionPayments
+from app.database.models import (
+    CompanySubscription,
+    Subscription,
+    SubscriptionDetails,
+    SubscriptionPayments,
+)
 
 
 @pytest.fixture
