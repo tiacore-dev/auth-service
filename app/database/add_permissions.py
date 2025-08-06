@@ -148,7 +148,7 @@ permissions = [
     # Get:
     ("get_all_chats", "Просмотр всех чатов", "observer_app"),
     ("get_all_accounts", "Просмотр всех тг аккаунтов", "observer_app"),
-    ("edit_account", "редактирование аккаунта", "observer_app"),
+    ("edit_accounts", "редактирование аккаунта", "observer_app"),
     # Prompts
     ("add_prompt", "Добавление промпта", "observer_app"),
     ("edit_prompt", "Редактирование промпта", "observer_app"),

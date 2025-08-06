@@ -1,4 +1,6 @@
 import pytest
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
 from httpx import AsyncClient
 from loguru import logger
 from tortoise import Tortoise
@@ -15,10 +17,11 @@ def test_settings():
     return _load_settings(ConfigName.TEST)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def test_app():
     app = create_app(config_name=ConfigName.TEST)
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    FastAPICache.init(InMemoryBackend())
+    async with AsyncClient(app=app, base_url="http://testserver") as ac:
         yield ac
     await Tortoise.close_connections()
 
@@ -50,6 +53,7 @@ pytest_plugins = [
     "tests.fixtures.names",
     "tests.fixtures.company_relations",
     "tests.fixtures.permissions",
+    "tests.fixtures.subscriptions",
 ]
 
 

@@ -9,7 +9,7 @@ load_dotenv()
 
 # Порт и биндинг
 PORT = 8000
-CONFIG_NAME = ConfigName(os.getenv("CONFIG_NAME", "Development"))
+CONFIG_NAME = ConfigName(os.getenv("CONFIG_NAME", "development"))
 
 
 app = create_app(config_name=CONFIG_NAME)

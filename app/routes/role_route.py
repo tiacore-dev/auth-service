@@ -25,9 +25,7 @@ role_router = APIRouter()
     summary="Добавление новой роли",
     status_code=status.HTTP_201_CREATED,
 )
-async def add_role(
-    data: RoleCreateSchema = Body(...), _: dict = Depends(require_superadmin)
-):
+async def add_role(data: RoleCreateSchema = Body(...), _: dict = Depends(require_superadmin)):
     logger.info("Создание роли")
     try:
         role = await Role.create(**data.model_dump())
@@ -68,9 +66,7 @@ async def add_many_roles(
         raise HTTPException(status_code=400, detail="Некорректные данные") from e
 
 
-@role_router.patch(
-    "/{role_id}", response_model=RoleResponseSchema, summary="Изменение роли"
-)
+@role_router.patch("/{role_id}", response_model=RoleResponseSchema, summary="Изменение роли")
 async def edit_role(
     role_id: UUID = Path(..., title="ID роли", description="ID изменяемой роли"),
     data: RoleEditSchema = Body(...),
@@ -84,9 +80,7 @@ async def edit_role(
             raise HTTPException(status_code=404, detail="Роль не найдена")
 
         if role.system_name:
-            raise HTTPException(
-                status_code=403, detail="Нельзя изменить системную роль"
-            )
+            raise HTTPException(status_code=403, detail="Нельзя изменить системную роль")
 
         await role.update_from_dict(data.model_dump(exclude_unset=True))
         await role.save()
@@ -98,9 +92,7 @@ async def edit_role(
         raise HTTPException(status_code=400, detail="Некорректные данные") from e
 
 
-@role_router.delete(
-    "/{role_id}", summary="Удаление роли", status_code=status.HTTP_204_NO_CONTENT
-)
+@role_router.delete("/{role_id}", summary="Удаление роли", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_role(
     role_id: UUID = Path(..., title="ID роли", description="ID удаляемой роли"),
     _: dict = Depends(require_superadmin),
@@ -143,9 +135,7 @@ async def get_roles(
         query &= Q(application_id=filters.application_id)
 
     if filters.order not in ("asc", "desc"):
-        raise HTTPException(
-            status_code=422, detail="order должен быть 'asc' или 'desc'"
-        )
+        raise HTTPException(status_code=422, detail="order должен быть 'asc' или 'desc'")
 
     sort_field = filters.sort_by if filters.order == "asc" else f"-{filters.sort_by}"
 
@@ -171,11 +161,7 @@ async def get_role(
 ):
     logger.info(f"Запрос на просмотр роли: {role_id}")
 
-    role_raw = (
-        await Role.filter(id=role_id)
-        .first()
-        .values("id", "name", "system_name", "application_id")
-    )
+    role_raw = await Role.filter(id=role_id).first().values("id", "name", "system_name", "application_id")
 
     if not role_raw:
         logger.warning(f"Роль {role_id} не найдена")

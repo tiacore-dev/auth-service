@@ -136,7 +136,7 @@ async def require_superadmin(
 
     logger.info(f"✅ Суперадмин авторизован: {email}")
     return {
-        "user": user_data["user_id"],
+        "user_id": user_data["user_id"],
         "email": email,
         "is_superadmin": True,
     }

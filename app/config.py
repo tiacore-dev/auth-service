@@ -33,7 +33,7 @@ class BaseConfig(SharedBaseConfig):
     PASSWORD: str = " "
 
     DOCKERHUB_USERNAME: str | None = None
-    CONFIG_NAME: str = "DEVELOPMENT"
+    CONFIG_NAME: str = "development"
 
     AUTH_BROKER_URL: str = ""
 

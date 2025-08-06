@@ -77,9 +77,7 @@ async def update_role_permission_relation(
     summary="Удалить связь роль-разрешение",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-async def delete_role_permission_relation(
-    role_permission_id: UUID, _: dict = Depends(require_superadmin)
-):
+async def delete_role_permission_relation(role_permission_id: UUID, _: dict = Depends(require_superadmin)):
     relation = await RolePermissionRelation.filter(id=role_permission_id).first()
     if not relation:
         raise HTTPException(status_code=404, detail="Связь не найдена")
@@ -111,9 +109,7 @@ async def get_role_permission_relations(
         sort_by = filters.get("sort_by", "act_date")
         order = filters.get("order", "asc").lower()
         if order not in ("asc", "desc"):
-            raise HTTPException(
-                status_code=422, detail="order должен быть 'asc' или 'desc'"
-            )
+            raise HTTPException(status_code=422, detail="order должен быть 'asc' или 'desc'")
 
         sort_field = sort_by if order == "asc" else f"-{sort_by}"
 
@@ -148,9 +144,7 @@ async def get_role_permission_relations(
     response_model=RolePermissionRelationSchema,
     summary="Просмотр одной связи",
 )
-async def get_role_permission_relation(
-    role_permission_id: UUID, _: dict = Depends(require_superadmin)
-):
+async def get_role_permission_relation(role_permission_id: UUID, _: dict = Depends(require_superadmin)):
     rel = (
         await RolePermissionRelation.filter(id=role_permission_id)
         .prefetch_related("role", "permission", "restriction")

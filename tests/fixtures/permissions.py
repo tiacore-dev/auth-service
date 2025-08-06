@@ -23,7 +23,8 @@ async def permission_view_user():
 
 @pytest.fixture
 async def seed_application():
-    return await Application.create(id="auth_app", name="Test App")
+    application = await Application.create(id="auth_app", name="Test App")
+    return application
 
 
 @pytest.fixture

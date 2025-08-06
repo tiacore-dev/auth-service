@@ -107,6 +107,7 @@ class User(Model):
     position = fields.CharField(max_length=255, null=True)
     is_superadmin = fields.BooleanField(default=False)
     is_verified = fields.BooleanField(default=False)
+    company_subscriptions: fields.ReverseRelation["CompanySubscription"]
 
     class Meta:
         table = "users"
@@ -144,6 +145,7 @@ class Company(Model):
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     name = fields.CharField(max_length=255)
     description = fields.TextField(null=True)
+    company_subscriptions: fields.ReverseRelation["CompanySubscription"]
 
     class Meta:
         table = "companies"
@@ -167,3 +169,73 @@ class UserCompanyRelation(Model):
 
     class Meta:
         table = "user_to_company_relations"
+
+
+class Subscription(Model):
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    name = fields.CharField(max_length=255)
+    price = fields.FloatField()
+    application = fields.ForeignKeyField("models.Application", related_name="subscriptions")
+    description = fields.TextField(null=True)
+    comment = fields.TextField(null=True)
+
+    created_at = fields.DatetimeField(auto_now_add=True)
+    created_by = fields.UUIDField()
+    modified_at = fields.DatetimeField(auto_now=True)
+    modified_by = fields.UUIDField()
+    company_subscriptions: fields.ReverseRelation["CompanySubscription"]
+
+    class Meta:
+        table = "subscriptions"
+
+
+class SubscriptionDetails(Model):
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    subscription = fields.ForeignKeyField("models.Subscription", related_name="subscription_details")
+    entity_name = fields.CharField(max_length=255)
+    bd_table = fields.CharField(max_length=100)
+    restriction = fields.IntField()
+    description = fields.TextField(null=True)
+    comment = fields.TextField(null=True)
+
+    created_at = fields.DatetimeField(auto_now_add=True)
+    created_by = fields.UUIDField()
+    modified_at = fields.DatetimeField(auto_now=True)
+    modified_by = fields.UUIDField()
+
+    class Meta:
+        table = "subscription_details"
+
+
+class CompanySubscription(Model):
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    user = fields.ForeignKeyField("models.User", related_name="company_subscriptions")
+    company = fields.ForeignKeyField("models.Company", related_name="company_subscriptions")
+    subscription = fields.ForeignKeyField("models.Subscription", related_name="company_subscriptions")
+
+    created_at = fields.DatetimeField(auto_now_add=True)
+    created_by = fields.UUIDField()
+    modified_at = fields.DatetimeField(auto_now=True)
+    modified_by = fields.UUIDField()
+
+    class Meta:
+        table = "company_subscriptions"
+        unique_together = ("company", "subscription")
+
+
+class SubscriptionPayments(Model):
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    company_subscription = fields.ForeignKeyField("models.CompanySubscription", related_name="payments")
+    payment_external_id = fields.CharField(max_length=255, null=True)
+    payment_date = fields.DateField()
+    payment_amount = fields.FloatField()
+    date_from = fields.DateField()
+    date_to = fields.DateField()
+
+    created_at = fields.DatetimeField(auto_now_add=True)
+    created_by = fields.UUIDField()
+    modified_at = fields.DatetimeField(auto_now=True)
+    modified_by = fields.UUIDField()
+
+    class Meta:
+        table = "subscription_payments"
