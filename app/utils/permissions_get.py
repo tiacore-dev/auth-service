@@ -4,7 +4,12 @@ from uuid import UUID
 
 from loguru import logger
 
-from app.database.models import RoleIncludeRelation, RolePermissionRelation, User, UserCompanyRelation
+from app.database.models import (
+    RoleIncludeRelation,
+    RolePermissionRelation,
+    User,
+    UserCompanyRelation,
+)
 
 
 async def get_company_permissions_for_user(
