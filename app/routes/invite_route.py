@@ -37,7 +37,7 @@ async def invite_user(data: InviteRequest, _=Depends(get_current_user), settings
     front_url = get_front_url(application_id=application.id, settings=settings)
     if existing_user:
         verification_link = f"{front_url}/accept-invite?token={token}"
-        company = await Company.get_or_none(company_id=data.company_id)
+        company = await Company.get_or_none(id=data.company_id)
         if not company:
             raise HTTPException(status_code=400, detail="Компания не найдена")
         body = f"""
