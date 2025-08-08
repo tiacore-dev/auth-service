@@ -59,7 +59,6 @@ class ApiToken(Model):
         app={self.application.id})>"""
 
 
-# Обновим Role с application_id
 class Role(Model):
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     name = fields.CharField(max_length=50, unique=True)
@@ -72,6 +71,20 @@ class Role(Model):
 
     class Meta:
         table = "user_roles"
+
+
+class RoleIncludeRelation(Model):
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    parent_role = fields.ForeignKeyField("models.Role", related_name="included_roles", on_delete=fields.CASCADE)
+    child_role = fields.ForeignKeyField("models.Role", related_name="included_in_roles", on_delete=fields.CASCADE)
+
+    created_at = fields.DatetimeField(auto_now_add=True)
+    created_by = fields.UUIDField()
+    modified_at = fields.DatetimeField(auto_now=True)
+    modified_by = fields.UUIDField()
+
+    class Meta:
+        table = "role_include_relations"
 
 
 class RolePermissionRelation(Model):

@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 from uuid import UUID
 
 from fastapi import Query
@@ -65,8 +65,10 @@ def subscription_payment_filter_params(
     payment_date_to: Optional[date] = Query(None, description="Дата оплаты до"),
     date_from: Optional[date] = Query(None, description="Начало периода действия"),
     date_to: Optional[date] = Query(None, description="Конец периода действия"),
-    sort_by: Optional[str] = Query("payment_date", description="Поле сортировки"),
-    order: Optional[str] = Query("asc", description="asc/desc"),
+    sort_by: Literal["created_at", "payment_date", "payment_amount"] = Query(
+        "payment_date", description="Поле сортировки"
+    ),
+    order: Literal["asc", "desc"] = Query("asc", description="asc/desc"),
     page: Optional[int] = Query(1, ge=1, description="Номер страницы"),
     page_size: Optional[int] = Query(10, ge=1, le=100, description="Размер страницы"),
 ):

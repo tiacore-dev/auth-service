@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 from uuid import UUID
 
 from fastapi import Query
@@ -62,8 +62,8 @@ def subscription_filter_params(
     application_id: Optional[UUID] = Query(None, description="ID приложения"),
     price_min: Optional[float] = Query(None, description="Минимальная цена"),
     price_max: Optional[float] = Query(None, description="Максимальная цена"),
-    sort_by: Optional[str] = Query("name", description="Поле сортировки"),
-    order: Optional[str] = Query("asc", description="asc/desc"),
+    sort_by: Literal["name", "created_at", "price", "application_id"] = Query("name", description="Поле сортировки"),
+    order: Literal["asc", "desc"] = Query("asc", description="asc/desc"),
     page: Optional[int] = Query(1, ge=1, description="Номер страницы"),
     page_size: Optional[int] = Query(10, ge=1, le=100, description="Размер страницы"),
 ):

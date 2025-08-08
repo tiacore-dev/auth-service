@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 from uuid import UUID
 
 from fastapi import Query
@@ -67,8 +67,8 @@ def subscription_details_filter_params(
     bd_table: Optional[str] = Query(None, description="Таблица БД"),
     restriction_min: Optional[int] = Query(None, description="Минимальное ограничение"),
     restriction_max: Optional[int] = Query(None, description="Максимальное ограничение"),
-    sort_by: Optional[str] = Query("entity_name", description="Поле сортировки"),
-    order: Optional[str] = Query("asc", description="asc/desc"),
+    sort_by: Literal["entity_name", "bd_table", "created_at"] = Query("entity_name", description="Поле сортировки"),
+    order: Literal["asc", "desc"] = Query("asc", description="asc/desc"),
     page: Optional[int] = Query(1, ge=1, description="Номер страницы"),
     page_size: Optional[int] = Query(10, ge=1, le=100, description="Размер страницы"),
 ):

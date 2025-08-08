@@ -4,6 +4,7 @@ from .application_route import application_router
 from .auth_route import auth_router
 from .company_route import company_router
 from .company_subscription_route import company_subscription_router
+from .include_roles_route import role_include_router
 from .invite_route import invite_router
 from .permissions_route import permissions_router
 from .register_route import register_router
@@ -32,6 +33,7 @@ def register_routes(app: FastAPI):
     )
 
     app.include_router(role_router, prefix="/api/roles", tags=["Roles"])
+    app.include_router(role_include_router, prefix="/api/include-roles", tags=["IncludeRoles"])
     app.include_router(permissions_router, prefix="/api/permissions", tags=["Permissions"])
     app.include_router(restrictions_router, prefix="/api/restrictions", tags=["Restrictions"])
     app.include_router(
