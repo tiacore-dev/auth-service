@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field
 
 
 class CompanySubscriptionBaseSchema(BaseModel):
-    user_id: UUID
     company_id: UUID
     subscription_id: UUID
 
@@ -20,7 +19,6 @@ class CompanySubscriptionCreateSchema(CompanySubscriptionBaseSchema):
 
 
 class CompanySubscriptionUpdateSchema(BaseModel):
-    user_id: Optional[UUID] = None
     company_id: Optional[UUID] = None
     subscription_id: Optional[UUID] = None
 
@@ -55,7 +53,6 @@ class CompanySubscriptionListResponseSchema(BaseModel):
 
 
 def company_subscription_filter_params(
-    user_id: Optional[UUID] = Query(None, description="ID пользователя"),
     company_id: Optional[UUID] = Query(None, description="ID компании"),
     subscription_id: Optional[UUID] = Query(None, description="ID подписки"),
     sort_by: Literal["created_at"] = Query("created_at", description="Поле сортировки"),
@@ -64,7 +61,6 @@ def company_subscription_filter_params(
     page_size: Optional[int] = Query(10, ge=1, le=100, description="Размер страницы"),
 ):
     return {
-        "user_id": user_id,
         "company_id": company_id,
         "subscription_id": subscription_id,
         "sort_by": sort_by,

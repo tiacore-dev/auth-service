@@ -222,7 +222,6 @@ class SubscriptionDetails(Model):
 
 class CompanySubscription(Model):
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
-    user = fields.ForeignKeyField("models.User", related_name="company_subscriptions")
     company = fields.ForeignKeyField("models.Company", related_name="company_subscriptions")
     subscription = fields.ForeignKeyField("models.Subscription", related_name="company_subscriptions")
 

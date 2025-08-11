@@ -44,16 +44,12 @@ async def seed_subscription_detail(seed_subscription, seed_user):
 @pytest.fixture
 async def seed_company_subscription(seed_user, seed_company, seed_subscription):
     subscription = await CompanySubscription.create(
-        user=seed_user,
         company=seed_company,
         subscription=seed_subscription,
         created_by=seed_user.id,
         modified_by=seed_user.id,
     )
     return subscription
-
-
-# conftest.py или fixtures/subscription_payments.py
 
 
 @pytest.fixture

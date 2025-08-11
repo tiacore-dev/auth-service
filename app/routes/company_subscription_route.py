@@ -84,8 +84,6 @@ async def get_company_subscriptions(
 ):
     query = Q()
 
-    if filters.get("user_id"):
-        query &= Q(user_id=filters["user_id"])
     if filters.get("company_id"):
         query &= Q(company_id=filters["company_id"])
     if filters.get("subscription_id"):

@@ -5,12 +5,9 @@ from app.database.models import CompanySubscription
 
 
 @pytest.mark.asyncio
-async def test_add_company_subscription(
-    test_app: AsyncClient, jwt_token_admin, seed_user, seed_company, seed_subscription
-):
+async def test_add_company_subscription(test_app: AsyncClient, jwt_token_admin, seed_company, seed_subscription):
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
     data = {
-        "user_id": str(seed_user.id),
         "company_id": str(seed_company.id),
         "subscription_id": str(seed_subscription.id),
     }
@@ -20,19 +17,20 @@ async def test_add_company_subscription(
 
     response_data = response.json()
     obj = await CompanySubscription.get_or_none(id=response_data["company_subscription_id"]).prefetch_related(
-        "subscription", "user", "company"
+        "subscription", "company"
     )
     assert obj is not None
     assert obj.subscription.id == seed_subscription.id
     assert obj.company.id == seed_company.id
-    assert obj.user.id == seed_user.id
 
 
 @pytest.mark.asyncio
-async def test_edit_company_subscription(test_app: AsyncClient, jwt_token_admin, seed_company_subscription, seed_user):
+async def test_edit_company_subscription(
+    test_app: AsyncClient, jwt_token_admin, seed_company_subscription, seed_company_new
+):
     headers = {"Authorization": f"Bearer {jwt_token_admin['access_token']}"}
     data = {
-        "user_id": str(seed_user.id),
+        "company_id": str(seed_company_new.id),
     }
 
     response = await test_app.patch(
@@ -40,8 +38,8 @@ async def test_edit_company_subscription(test_app: AsyncClient, jwt_token_admin,
     )
     assert response.status_code == 200, response.text
 
-    updated = await CompanySubscription.get(id=seed_company_subscription.id).prefetch_related("user")
-    assert updated.user.id == seed_user.id
+    updated = await CompanySubscription.get(id=seed_company_subscription.id).prefetch_related("company")
+    assert str(updated.company.id) == str(seed_company_new.id)
 
 
 @pytest.mark.asyncio
