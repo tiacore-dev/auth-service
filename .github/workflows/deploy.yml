@@ -88,9 +88,6 @@ jobs:
 
 
 
-
-
-
   deploy:
     runs-on: ubuntu-latest
     needs: build-test-push
@@ -172,14 +169,11 @@ jobs:
           ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << EOF
             cd $DEPLOY_PATH || exit 1
 
-            docker compose -f docker-compose.app.yml down && \
-            docker compose -f docker-compose.app.yml up -d  && \
-            echo "✅ Контейнер перезапущен" || {
-              echo "❌ Контейнер не запустился"
-              exit 1
-            }
+            docker compose -f docker-compose.app.yml up -d --force-recreate web > /dev/null \
+              && echo "✅ Контейнер перезапущен" \
+              || { echo "❌ Контейнер не запустился"; exit 1; }
 
-            docker image prune -f > /dev/null
+            docker system prune -af > /dev/null
           EOF
 
 

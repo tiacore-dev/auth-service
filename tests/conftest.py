@@ -10,6 +10,7 @@ from app.config import ConfigName, _load_settings
 from app.database.models import Application, User
 from app.handlers.auth import create_access_token, create_refresh_token, login_handler
 from app.utils.db_helpers import drop_all_tables
+from tests.test_publisher import NullPublisher
 
 
 @pytest.fixture(scope="session")
@@ -21,6 +22,7 @@ def test_settings():
 async def test_app():
     app = create_app(config_name=ConfigName.TEST)
     FastAPICache.init(InMemoryBackend())
+    app.state.publisher = NullPublisher()
     async with AsyncClient(app=app, base_url="http://testserver") as ac:
         yield ac
     await Tortoise.close_connections()
