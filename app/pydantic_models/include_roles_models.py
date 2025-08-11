@@ -2,11 +2,10 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import Field
-from tiacore_lib.pydantic_models.clean_model import CleanableBaseModel
+from pydantic import BaseModel, Field
 
 
-class RoleIncludeRelationCreateSchema(CleanableBaseModel):
+class RoleIncludeRelationCreateSchema(BaseModel):
     parent_role_id: UUID = Field(..., description="UUID основной роли (например, Parcel Admin)")
     child_role_id: UUID = Field(..., description="UUID включённой роли (например, Base Admin)")
 
@@ -16,7 +15,7 @@ class RoleIncludeRelationCreateSchema(CleanableBaseModel):
         populate_by_name = True
 
 
-class RoleIncludeRelationSchema(CleanableBaseModel):
+class RoleIncludeRelationSchema(BaseModel):
     id: UUID = Field(..., alias="role_include_relation_id")
     parent_role_id: UUID
     child_role_id: UUID
@@ -28,7 +27,7 @@ class RoleIncludeRelationSchema(CleanableBaseModel):
         populate_by_name = True
 
 
-class RoleIncludeRelationListResponseSchema(CleanableBaseModel):
+class RoleIncludeRelationListResponseSchema(BaseModel):
     total: int
     relations: list[RoleIncludeRelationSchema]
 
@@ -38,14 +37,14 @@ class RoleIncludeRelationListResponseSchema(CleanableBaseModel):
         populate_by_name = True
 
 
-class RoleIncludeRelationResponseSchema(CleanableBaseModel):
+class RoleIncludeRelationResponseSchema(BaseModel):
     role_include_relation_id: UUID
 
     class Config:
         from_attributes = True
 
 
-class RoleIncludeRelationEditSchema(CleanableBaseModel):
+class RoleIncludeRelationEditSchema(BaseModel):
     parent_role_id: UUID | None = Field(None, description="UUID основной роли")
     child_role_id: UUID | None = Field(None, description="UUID включённой роли")
 
@@ -55,7 +54,7 @@ class RoleIncludeRelationEditSchema(CleanableBaseModel):
         populate_by_name = True
 
 
-class RoleIncludeRelationFilterSchema(CleanableBaseModel):
+class RoleIncludeRelationFilterSchema(BaseModel):
     parent_role_id: UUID | None = Field(None, description="Фильтр по основной роли")
     child_role_id: UUID | None = Field(None, description="Фильтр по включённой роли")
     sort_by: Literal["created_at"] = Field("created_at", description="Поле сортировки")

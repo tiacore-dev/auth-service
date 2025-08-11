@@ -2,8 +2,6 @@ from collections import defaultdict
 from typing import Dict, List
 from uuid import UUID
 
-from loguru import logger
-
 from app.database.models import (
     RoleIncludeRelation,
     RolePermissionRelation,
@@ -83,7 +81,6 @@ async def get_company_permissions_by_application(
             all_perms.extend(role_perm_map.get(str(rid), []))
         all_perms = list(set(all_perms))  # убираем дубли
         result[app_id][company_id].append({"role": rel.role.name, "permissions": all_perms})
-    logger.debug(result)
     return result
 
 
