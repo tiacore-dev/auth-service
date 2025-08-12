@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, List, Set, Tuple
 from uuid import UUID
 
 from app.database.models import (
@@ -8,6 +8,49 @@ from app.database.models import (
     User,
     UserCompanyRelation,
 )
+
+# --- helpers ---
+
+
+async def _reachable_roles_and_adj(start_roles: Set[UUID]) -> Tuple[Set[UUID], dict[UUID, Set[UUID]]]:
+    """
+    BFS для всех стартовых ролей сразу.
+    Возвращает:
+      - visited: все достижимые роли (включая стартовые)
+      - adj: adjacency list parent -> set(children)
+    """
+    visited: Set[UUID] = set(start_roles)
+    frontier: Set[UUID] = set(start_roles)
+    adj: dict[UUID, Set[UUID]] = defaultdict(set)
+
+    while frontier:
+        # за один проход тянем всех детей для текущего фронтира
+        rows = await RoleIncludeRelation.filter(parent_role_id__in=frontier).values_list(
+            "parent_role_id", "child_role_id"
+        )
+        frontier = set()
+        for parent_id, child_id in rows:
+            adj[parent_id].add(child_id)
+            if child_id not in visited:
+                visited.add(child_id)
+                frontier.add(child_id)
+    return visited, adj
+
+
+def _closure_for_role(root: UUID, adj: dict[UUID, Set[UUID]]) -> Set[UUID]:
+    """Строим замыкание роли по уже загруженному графу (в памяти)."""
+    stack = [root]
+    seen: Set[UUID] = {root}
+    while stack:
+        cur = stack.pop()
+        for ch in adj.get(cur, ()):
+            if ch not in seen:
+                seen.add(ch)
+                stack.append(ch)
+    return seen
+
+
+# --- основная функция ---
 
 
 async def get_company_permissions_for_user(
@@ -20,29 +63,49 @@ async def get_company_permissions_for_user(
     if not relations:
         return {}
 
-    role_ids = {rel.role.id for rel in relations}
+    # Уникальные базовые роли
+    base_role_ids: Set[UUID] = {rel.role.id for rel in relations}
     role_id_to_name = {str(rel.role.id): rel.role.name for rel in relations}
 
-    role_permissions = await RolePermissionRelation.filter(role_id__in=role_ids).select_related(
-        "permission", "role", "restriction"
-    )
+    # 1) Один раз строим достижимые роли и граф включений
+    all_roles_needed, adj = await _reachable_roles_and_adj(base_role_ids)
 
-    # role_id → List[permission.id]
-    role_perm_map = defaultdict(list)
-    for rp in role_permissions:
-        role_perm_map[str(rp.role.id)].append(rp.permission.id)
+    # 2) Разворачиваем замыкание для каждой базовой роли в памяти
+    closure_map: dict[str, Set[UUID]] = {}
+    for rid in base_role_ids:
+        closure_map[str(rid)] = _closure_for_role(rid, adj)
 
+    # 3) Тянем права для всех ролей из объединённого множества одной выборкой
+    #    Берём только нужные поля
+    rp_rows = await RolePermissionRelation.filter(role_id__in=all_roles_needed).values_list("role_id", "permission_id")
+
+    # role_id -> [permission_id(str)]
+    role_perm_map: dict[str, List[str]] = defaultdict(list)
+    for role_id, perm_id in rp_rows:
+        role_perm_map[str(role_id)].append(str(perm_id))
+
+    # 4) Собираем ответ: для каждой связи union прав по замыканию роли
     result: Dict[str, Dict[str, List[dict]]] = defaultdict(lambda: defaultdict(list))
     for rel in relations:
         app_id = str(rel.application.id)
         company_id = str(rel.company.id)
-        role_id = str(rel.role.id)
-        role_name = role_id_to_name.get(role_id, "Неизвестная роль")
-        perms = role_perm_map.get(role_id, [])
+        role_id_str = str(rel.role.id)
 
-        result[app_id][company_id].append({"role": role_name, "permissions": perms})
+        perms_union: set[str] = set()
+        for rid in closure_map[role_id_str]:
+            perms_union.update(role_perm_map.get(str(rid), []))
+
+        result[app_id][company_id].append(
+            {
+                "role": role_id_to_name.get(role_id_str, "Неизвестная роль"),
+                "permissions": list(perms_union),  # <- строковые id, как тебе и нужно
+            }
+        )
 
     return result
+
+
+# --- версия по одному приложению (без «перетеканий») ---
 
 
 async def get_company_permissions_by_application(
@@ -58,29 +121,41 @@ async def get_company_permissions_by_application(
     if not relations:
         return {}
 
-    role_ids = {rel.role.id for rel in relations}
-    all_role_ids = await get_all_linked_role_ids(role_ids)
-    # role_id_to_name = {str(rel.role.id): rel.role.name for rel in relations}
+    base_role_ids: Set[UUID] = {rel.role.id for rel in relations}
+    role_id_to_name = {str(rel.role.id): rel.role.name for rel in relations}
 
-    role_permissions = await RolePermissionRelation.filter(role_id__in=all_role_ids).select_related(
-        "permission", "role", "restriction"
-    )
+    # Один общий граф включений для всех ролей в этом приложении
+    all_roles_needed, adj = await _reachable_roles_and_adj(base_role_ids)
 
-    role_perm_map = defaultdict(list)
-    for rp in role_permissions:
-        role_perm_map[str(rp.role.id)].append(rp.permission.id)
+    # Замыкание для каждой роли
+    closure_map: dict[str, Set[UUID]] = {}
+    for rid in base_role_ids:
+        closure_map[str(rid)] = _closure_for_role(rid, adj)
 
+    # Права для всех задействованных ролей
+    rp_rows = await RolePermissionRelation.filter(role_id__in=all_roles_needed).values_list("role_id", "permission_id")
+    role_perm_map: dict[str, List[str]] = defaultdict(list)
+    for role_id, perm_id in rp_rows:
+        role_perm_map[str(role_id)].append(str(perm_id))
+
+    # Результат
     result: Dict[str, Dict[str, List[dict]]] = defaultdict(lambda: defaultdict(list))
-
     for rel in relations:
-        app_id = str(rel.application.id)
+        app_id = str(rel.application.id)  # = application_id
         company_id = str(rel.company.id)
-        # Собираем union всех прав по all_role_ids
-        all_perms = []
-        for rid in all_role_ids:
-            all_perms.extend(role_perm_map.get(str(rid), []))
-        all_perms = list(set(all_perms))  # убираем дубли
-        result[app_id][company_id].append({"role": rel.role.name, "permissions": all_perms})
+        role_id_str = str(rel.role.id)
+
+        perms_union: set[str] = set()
+        for rid in closure_map[role_id_str]:
+            perms_union.update(role_perm_map.get(str(rid), []))
+
+        result[app_id][company_id].append(
+            {
+                "role": role_id_to_name.get(role_id_str, "Неизвестная роль"),
+                "permissions": list(perms_union),
+            }
+        )
+
     return result
 
 
