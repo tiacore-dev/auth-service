@@ -65,8 +65,6 @@ async def refresh_access_token(data: RefreshRequest, settings=Depends(get_settin
             raise HTTPException(status_code=401, detail="User not found")
 
         company_permissions = await get_company_permissions_for_user(user)
-        # logger.debug(f"🧪 is_superadmin: {user.is_superadmin}")
-        # logger.debug(f"🧪 permissions: {company_permissions}")
 
         return TokenResponse(
             access_token=create_access_token({"sub": user.email}, settings, type="access"),

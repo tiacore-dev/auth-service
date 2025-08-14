@@ -188,6 +188,7 @@ permissions = [
     ("add_contract_file", "Добавление файла контракта", "contract_app"),
     ("edit_contract_file", "Редактирование файла контракта", "contract_app"),
     ("delete_contract_file", "Удаление файла контракта", "contract_app"),
+    ("download_contract_file", "Скачивание файла контракта", "contract_app"),
     ("view_contract_file", "Просмотр файла контракта", "contract_app"),
     ("get_all_contract_files", "Просмотр всех файлов контрактов", "contract_app"),
     # Contract Types

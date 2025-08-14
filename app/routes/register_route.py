@@ -24,18 +24,14 @@ async def register(
 ):
     user_exists = await User.exists(email=data.email)
     if user_exists:
-        raise HTTPException(
-            status_code=400, detail=f"User with email {data.email} already exists"
-        )
+        raise HTTPException(status_code=400, detail=f"User with email {data.email} already exists")
     user = await User.create_user(
         email=data.email,
         password=data.password,
         full_name=data.full_name,
         position=data.position,
     )
-    token = generate_token(
-        {"sub": str(user.id), "application_id": data.application_id}, settings
-    )
+    token = generate_token({"sub": str(user.id), "application_id": data.application_id}, settings)
     logger.info(f"Пользователь зарегистрирован: {user.email}, user_id={user.id}")
     front_url = get_front_url(application_id=data.application_id, settings=settings)
     verification_link = f"{front_url}/login?token={token}"
@@ -64,9 +60,7 @@ async def resend_verification(
     if user.is_verified:
         return {"message": "Почта уже подтверждена"}
 
-    token = generate_token(
-        {"sub": str(user.id), "application_id": application_id}, settings
-    )
+    token = generate_token({"sub": str(user.id), "application_id": application_id}, settings)
     front_url = get_front_url(application_id=application_id, settings=settings)
     verification_link = f"{front_url}/login?token={token}"
     body = f"""
@@ -92,9 +86,7 @@ async def verify_email(token: str = Query(...), settings=Depends(get_settings)):
 
     user = await User.get_or_none(id=user_id)
     if not user:
-        logger.warning(
-            f"Пользователь не найден при верификации почты, user_id={user_id}"
-        )
+        logger.warning(f"Пользователь не найден при верификации почты, user_id={user_id}")
         raise HTTPException(status_code=400, detail="Пользователь не найден")
 
     if user.is_verified:
