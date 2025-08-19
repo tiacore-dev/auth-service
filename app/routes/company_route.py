@@ -56,9 +56,7 @@ async def add_company(
         return {"company_id": str(company.id)}
     await validate_exists(Application, data.application_id, "Приложение")
 
-    role = await Role.get_or_none(
-        system_name="admin", application_id=data.application_id
-    )
+    role = await Role.get_or_none(system_name="admin", application_id=data.application_id)
     if role:
         await UserCompanyRelation.create(
             role=role,
@@ -73,21 +71,15 @@ async def add_company(
 
 
 # ✅ 2. Изменение компании
-@company_router.patch(
-    "/{company_id}", response_model=CompanyResponseSchema, summary="Изменение компании"
-)
+@company_router.patch("/{company_id}", response_model=CompanyResponseSchema, summary="Изменение компании")
 async def edit_company(
-    company_id: UUID = Path(
-        ..., title="ID компании", description="ID изменяемой компании"
-    ),
+    company_id: UUID = Path(..., title="ID компании", description="ID изменяемой компании"),
     data: CompanyEditSchema = Body(),
     _=Depends(get_current_user),
 ):
     logger.info(f"Обновление компании {company_id}")
 
-    updated_rows = await Company.filter(id=company_id).update(
-        **data.model_dump(exclude_unset=True)
-    )
+    updated_rows = await Company.filter(id=company_id).update(**data.model_dump(exclude_unset=True))
 
     if not updated_rows:
         raise HTTPException(status_code=404, detail="Компания не найдена")
@@ -97,13 +89,9 @@ async def edit_company(
 
 
 # ✅ 3. Удаление компании
-@company_router.delete(
-    "/{company_id}", summary="Удаление компании", status_code=status.HTTP_204_NO_CONTENT
-)
+@company_router.delete("/{company_id}", summary="Удаление компании", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_company(
-    company_id: UUID = Path(
-        ..., title="ID компании", description="ID удаляемой компании"
-    ),
+    company_id: UUID = Path(..., title="ID компании", description="ID удаляемой компании"),
     _=Depends(get_current_user),
 ):
     logger.info(f"Удаление компании: {company_id}")
@@ -175,27 +163,19 @@ async def get_companies(
         raise HTTPException(status_code=400, detail="Некорректные данные") from e
 
 
-@company_router.get(
-    "/{company_id}", response_model=CompanySchema, summary="Просмотр компании"
-)
+@company_router.get("/{company_id}", response_model=CompanySchema, summary="Просмотр компании")
 async def get_company(
-    company_id: UUID = Path(
-        ..., title="ID компании", description="ID просматриваемой компании"
-    ),
+    company_id: UUID = Path(..., title="ID компании", description="ID просматриваемой компании"),
     user_data: dict = Depends(get_current_user),
 ):
     logger.info(f"Запрос на просмотр компании: {company_id}")
 
-    company = await Company.get_or_none(id=company_id).values(
-        "id", "name", "description"
-    )
+    company = await Company.get_or_none(id=company_id).values("id", "name", "description")
     if company is None:
         logger.warning(f"Компания {company_id} не найдена")
         raise HTTPException(status_code=404, detail="Компания не найдена")
     user = await User.get_or_none(email=user_data["email"])
-    relation = await UserCompanyRelation.filter(
-        user=user, company_id=company_id
-    ).exists()
+    relation = await UserCompanyRelation.filter(user=user, company_id=company_id).exists()
     if not user or (not user.is_superadmin and not relation):
         raise HTTPException(status_code=403, detail="Нет доступа к этой компании")
 

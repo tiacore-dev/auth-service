@@ -79,23 +79,69 @@ async def refresh_access_token(data: RefreshRequest, settings=Depends(get_settin
 
 
 @auth_router.get("/me", response_model=MEResponse, summary="Получение инфы о пользователе")
-async def give_user_data(application_id: str = Query(...), token_data=Depends(get_current_user)):
+async def give_user_data(
+    application_id: str = Query(..., description="UUID приложения (строкой)"),
+    token_data=Depends(get_current_user),
+):
+    logger.debug(f"[auth.me] start: application_id={application_id!s} user_id={token_data.get('user_id')}")
+
     user = await User.get_or_none(id=token_data["user_id"])
     if not user:
+        logger.warning("[auth.me] invalid token: user not found")
         raise HTTPException(status_code=400, detail="Invalid token data")
+
+    # --- Relations
     relations = await UserCompanyRelation.filter(user=user).prefetch_related("company", "role").all()
-    relation_list = [
-        UserCompanyRelationOut(id=str(r.id), company_id=str(r.company.id), role=r.role.name) for r in relations
+    rel_preview = [
+        {
+            "rel_id": str(r.id),
+            "company_id": str(getattr(r, "company_id", getattr(r.company, "id", None))),
+            "role": getattr(r.role, "system_name", getattr(r.role, "name", None)),
+            # Если у модели есть поле application_id — полезно увидеть его тоже:
+            "application_id": str(getattr(r, "application_id", "")) or None,
+        }
+        for r in relations[:3]
     ]
+    logger.debug(f"[auth.me] relations: count={len(relations)} preview={rel_preview}")
 
-    company_list = [relation.company.id for relation in relations]
+    relation_list = [
+        UserCompanyRelationOut(
+            id=str(r.id),
+            company_id=str(getattr(r, "company_id", r.company.id)),
+            role=getattr(r.role, "name", None),
+        )
+        for r in relations
+    ]
+    company_list = [str(getattr(r, "company_id", r.company.id)) for r in relations]
+
+    logger.debug(f"[auth.me] companies: count={len(company_list)} sample={company_list[:5]}")
+
+    # --- Permissions (как возвращает get_company_permissions_by_application)
     permissions = await get_company_permissions_by_application(user, application_id)
-    if not permissions:
-        filtered_permissions = {}
+    if isinstance(permissions, dict):
+        logger.debug(f"[auth.me] raw permissions: type=dict keys(top5)={list(permissions.keys())[:5]}")
     else:
-        filtered_permissions = permissions.get(application_id, {})
+        logger.debug(f"[auth.me] raw permissions: type={type(permissions).__name__} preview={str(permissions)[:200]}")
 
-    return MEResponse(
+    # Если permissions в формате {app_id: {company_id: [perm,...]}}
+    if permissions:
+        filtered_permissions = permissions.get(application_id, {})
+    else:
+        filtered_permissions = {}
+
+    if isinstance(filtered_permissions, dict):
+        perm_company_keys = list(filtered_permissions.keys())
+        logger.debug(
+            f"[auth.me] filtered_permissions: companies={len(perm_company_keys)} keys(top5)={perm_company_keys[:5]}"
+        )
+        if perm_company_keys:
+            first_key = perm_company_keys[0]
+            first_val = filtered_permissions.get(first_key) or []
+            logger.debug(f"[auth.me] first company={first_key} perms(sample)={first_val[:10]}")
+    else:
+        logger.debug(f"[auth.me] filtered_permissions: type={type(filtered_permissions).__name__}")
+
+    response = MEResponse(
         user_id=user.id,
         is_superadmin=user.is_superadmin,
         email=user.email,
@@ -103,6 +149,21 @@ async def give_user_data(application_id: str = Query(...), token_data=Depends(ge
         companies=company_list,
         relations=relation_list,
     )
+
+    try:
+        # model_dump доступен в Pydantic v2; если v1 — замените на .dict()
+        payload = response.model_dump()
+    except Exception:
+        payload = response.dict()
+
+    logger.debug(
+        "[auth.me] response summary: keys=%s companies=%s perms_companies=%s",
+        list(payload.keys()),
+        len(payload.get("companies") or []),
+        len((payload.get("permissions") or {}) if isinstance(payload.get("permissions"), dict) else []),
+    )
+
+    return response
 
 
 @auth_router.post("/logout", summary="Логаут")
