@@ -101,6 +101,7 @@ async def register_with_token(
             role=role,
             application_id=application_id,
         )
+        logger.debug("Связь создана")
     return TokenResponse(
         access_token=create_access_token({"sub": user.email}, settings, type="access"),
         refresh_token=create_refresh_token({"sub": user.email}, settings, type="refresh"),
@@ -128,4 +129,5 @@ async def accept_invite(token: str = Query(...), settings=Depends(get_settings))
         logger.info("🔁 Связь уже существует")
         return
     await UserCompanyRelation.create(user=user, company_id=company_id, role=role, application_id=application_id)
+    logger.debug("Связь создана")
     return
