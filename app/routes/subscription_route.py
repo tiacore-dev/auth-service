@@ -79,7 +79,6 @@ async def delete_subscription(
 )
 async def get_subscriptions(
     filters: dict = Depends(subscription_filter_params),
-    _: dict = Depends(require_superadmin),
 ):
     query = Q()
 
@@ -120,7 +119,6 @@ async def get_subscriptions(
 )
 async def get_subscription_by_id(
     subscription_id: UUID,
-    context: dict = Depends(require_superadmin),
 ):
     subscription = await Subscription.filter(id=subscription_id).first()
     if not subscription:
