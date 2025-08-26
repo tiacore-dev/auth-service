@@ -78,7 +78,6 @@ async def delete_subscription_detail(
 )
 async def get_subscription_details(
     filters: dict = Depends(subscription_details_filter_params),
-    _: dict = Depends(require_superadmin),
 ):
     query = Q()
 
@@ -120,7 +119,6 @@ async def get_subscription_details(
 )
 async def get_subscription_detail_by_id(
     subscription_details_id: UUID,
-    context: dict = Depends(require_superadmin),
 ):
     detail = await SubscriptionDetails.filter(id=subscription_details_id).first()
     if not detail:
