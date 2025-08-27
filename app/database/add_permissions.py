@@ -307,6 +307,16 @@ permissions = [
         "Просмотр всех отправлений",
         "parcel_app",
     ),
+    # Service
+    ("add_service", "Добавление услуги", "parcel_app"),
+    ("edit_service", "Редактирование услуги", "parcel_app"),
+    ("delete_service", "Удаление услуги", "parcel_app"),
+    ("view_service", "Просмотр услуги", "parcel_app"),
+    (
+        "get_all_services",
+        "Просмотр всех услуг",
+        "parcel_app",
+    ),
     # Transit details
     ("add_transit_details", "Добавление деталей отправления", "parcel_app"),
     ("edit_transit_details", "Редактирование деталей отправления", "parcel_app"),
